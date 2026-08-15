@@ -17,7 +17,9 @@ const useStyles = makeStyles((theme) => ({
       paddingBottom: 0,
       '& #main-content': {
         paddingRight: (props) =>
-          props.addPadding ? desktopPlayerWidth + theme.spacing(2) : undefined,
+          props.addPadding
+            ? `calc(${desktopPlayerWidth} + ${theme.spacing(2)}px)`
+            : undefined,
         transition: theme.transitions.create('padding-right', {
           duration: theme.transitions.duration.shorter,
         }),

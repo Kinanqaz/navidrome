@@ -46,7 +46,7 @@ func (s *maintenanceService) DeleteMediaFile(ctx context.Context, id string) err
 	}
 	store, err := storage.For(mf.LibraryPath)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrMediaFileDeletionUnsupported, err)
+		return fmt.Errorf("%w: %w", ErrMediaFileDeletionUnsupported, err)
 	}
 	musicFS, err := store.FS()
 	if err != nil {

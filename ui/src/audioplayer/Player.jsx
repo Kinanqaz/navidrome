@@ -34,6 +34,7 @@ import { keyMap } from '../hotkeys'
 import keyHandlers from './keyHandlers'
 import { calculateGain } from '../utils/calculateReplayGain'
 import { detectBrowserProfile, decisionService } from '../transcode'
+import DesktopPlayerResizeHandle from './DesktopPlayerResizeHandle'
 
 const Player = () => {
   const theme = useCurrentTheme()
@@ -455,6 +456,7 @@ const Player = () => {
 
   return (
     <ThemeProvider theme={createMuiTheme(theme)}>
+      <DesktopPlayerResizeHandle visible={visible && isDesktop} />
       <ReactJkMusicPlayer
         {...options}
         className={classes.player}
