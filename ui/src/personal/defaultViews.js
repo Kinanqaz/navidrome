@@ -1,4 +1,4 @@
-import albumLists, { defaultAlbumList } from '../album/albumLists'
+import albumLists from '../album/albumLists'
 
 export const resourceDefaultViews = ['artist', 'song', 'playlist', 'radio']
 
@@ -17,6 +17,4 @@ export const getDefaultViewChoices = (translate) => [
 ]
 
 export const getStoredDefaultView = () =>
-  import.meta.env.VITE_UI_PROTOTYPE === 'true'
-    ? 'song'
-    : localStorage.getItem('defaultView') || defaultAlbumList
+  localStorage.getItem('defaultView') || 'song'

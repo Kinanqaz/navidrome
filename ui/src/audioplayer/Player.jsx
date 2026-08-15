@@ -54,9 +54,6 @@ const Player = () => {
       navigator.userAgent,
     )
 
-  const prototypeEnabled =
-    import.meta.env.DEV || import.meta.env.VITE_UI_PROTOTYPE === 'true'
-
   const { authenticated } = useAuthState()
 
   // Keep a ref to playerState so the mount effect can read the latest value
@@ -412,7 +409,7 @@ const Player = () => {
     })
   }, [dispatch, currentTrackId])
 
-  if (!visible || prototypeEnabled) {
+  if (!visible) {
     document.title = 'Navidrome'
   }
 
@@ -455,8 +452,6 @@ const Player = () => {
       audioInstance.removeEventListener('seeked', handleSeeked)
     }
   }, [audioInstance])
-
-  if (prototypeEnabled) return null
 
   return (
     <ThemeProvider theme={createMuiTheme(theme)}>

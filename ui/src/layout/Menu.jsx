@@ -5,6 +5,8 @@ import clsx from 'clsx'
 import { useTranslate, MenuItemLink, getResources } from 'react-admin'
 import ViewListIcon from '@material-ui/icons/ViewList'
 import AlbumIcon from '@material-ui/icons/Album'
+import CategoryOutlinedIcon from '@material-ui/icons/CategoryOutlined'
+import WbSunnyOutlinedIcon from '@material-ui/icons/WbSunnyOutlined'
 import SubMenu from './SubMenu'
 import { humanize, pluralize } from 'inflection'
 import albumLists from '../album/albumLists'
@@ -52,6 +54,7 @@ const Menu = ({ dense = false }) => {
   const queue = useSelector((state) => state.player?.queue)
   const classes = useStyles({ addPadding: queue.length > 0 })
   const resources = useSelector(getResources)
+  const songResource = resources.find((resource) => resource.name === 'song')
 
   // TODO State is not persisted in mobile when you close the sidebar menu. Move to redux?
   const [state, setState] = useState({
@@ -113,6 +116,23 @@ const Menu = ({ dense = false }) => {
       })}
     >
       {open && <LibrarySelector />}
+      {songResource && renderResourceMenuItemLink(songResource)}
+      <MenuItemLink
+        to="/categories"
+        activeClassName={classes.active}
+        primaryText="Categories"
+        leftIcon={<CategoryOutlinedIcon />}
+        sidebarIsOpen={open}
+        dense={dense}
+      />
+      <MenuItemLink
+        to="/moods"
+        activeClassName={classes.active}
+        primaryText="Moods"
+        leftIcon={<WbSunnyOutlinedIcon />}
+        sidebarIsOpen={open}
+        dense={dense}
+      />
       <SubMenu
         handleToggle={() => handleToggle('menuAlbumList')}
         isOpen={state.menuAlbumList}
@@ -125,7 +145,10 @@ const Menu = ({ dense = false }) => {
           renderAlbumMenuItemLink(type, albumLists[type]),
         )}
       </SubMenu>
-      {resources.filter(subItems(undefined)).map(renderResourceMenuItemLink)}
+      {resources
+        .filter(subItems(undefined))
+        .filter((resource) => resource.name !== 'song')
+        .map(renderResourceMenuItemLink)}
       {config.devSidebarPlaylists && open ? (
         <>
           <Divider />

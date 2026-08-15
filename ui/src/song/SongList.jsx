@@ -1,74 +1,31 @@
-import { useMemo } from 'react'
+import React from 'react'
 import {
   AutocompleteArrayInput,
   Filter,
-  FunctionField,
-  NumberField,
+  NullableBooleanInput,
   ReferenceArrayInput,
   SearchInput,
-  TextField,
-  useTranslate,
-  NullableBooleanInput,
   usePermissions,
+  useTranslate,
 } from 'react-admin'
 import { useMediaQuery } from '@material-ui/core'
 import FavoriteIcon from '@material-ui/icons/Favorite'
+import { makeStyles } from '@material-ui/core/styles'
 import {
-  DateField,
-  DurationField,
   List,
-  SongContextMenu,
-  SongDatagrid,
+  SongBulkActions,
   SongInfo,
-  SongTitleField,
-  SongSimpleList,
-  RatingField,
-  useResourceRefresh,
-  ArtistLinkField,
-  PathField,
   defaultRowsPerPageOptions,
   getStoredPerPage,
+  useResourceRefresh,
 } from '../common'
-import { useDispatch } from 'react-redux'
-import { makeStyles } from '@material-ui/core/styles'
-import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
-import { setTrack } from '../actions'
 import { SongListActions } from './SongListActions'
-import { AlbumLinkField } from './AlbumLinkField'
-import { SongBulkActions, QualityInfo, useSelectedFields } from '../common'
 import config from '../config'
 import ExpandInfoDialog from '../dialogs/ExpandInfoDialog'
-import { SongListPrototype } from './SongListPrototype'
-
-const prototypeEnabled =
-  import.meta.env.DEV || import.meta.env.VITE_UI_PROTOTYPE === 'true'
+import { ModernSongList } from './ModernSongList'
 
 const useStyles = makeStyles({
-  contextHeader: {
-    marginLeft: '3px',
-    marginTop: '-2px',
-    verticalAlign: 'text-top',
-  },
-  row: {
-    '&:hover': {
-      '& $contextMenu': {
-        visibility: 'visible',
-      },
-      '& $ratingField': {
-        visibility: 'visible',
-      },
-    },
-  },
-  contextMenu: {
-    visibility: 'hidden',
-  },
-  ratingField: {
-    visibility: 'hidden',
-  },
-  chip: {
-    margin: 0,
-    height: '24px',
-  },
+  chip: { margin: 0, height: 24 },
 })
 
 const SongFilter = (props) => {
@@ -76,8 +33,9 @@ const SongFilter = (props) => {
   const translate = useTranslate()
   const { permissions } = usePermissions()
   const isAdmin = permissions === 'admin'
+
   return (
-    <Filter {...props} variant={'outlined'}>
+    <Filter {...props} variant="outlined">
       <SearchInput source="title" alwaysOn />
       <ReferenceArrayInput
         label={translate('resources.song.fields.genre')}
@@ -96,9 +54,7 @@ const SongFilter = (props) => {
         perPage={0}
         sort={{ field: 'tagValue', order: 'ASC' }}
         filter={{ tag_name: 'grouping' }}
-        filterToQuery={(searchText) => ({
-          tag_value: [searchText],
-        })}
+        filterToQuery={(searchText) => ({ tag_value: [searchText] })}
       >
         <AutocompleteArrayInput
           emptyText="-- None --"
@@ -113,9 +69,7 @@ const SongFilter = (props) => {
         perPage={0}
         sort={{ field: 'tagValue', order: 'ASC' }}
         filter={{ tag_name: 'mood' }}
-        filterToQuery={(searchText) => ({
-          tag_value: [searchText],
-        })}
+        filterToQuery={(searchText) => ({ tag_value: [searchText] })}
       >
         <AutocompleteArrayInput
           emptyText="-- None --"
@@ -126,7 +80,7 @@ const SongFilter = (props) => {
       {config.enableFavourites && (
         <NullableBooleanInput
           source="starred"
-          label={<FavoriteIcon fontSize={'small'} />}
+          label={<FavoriteIcon fontSize="small" />}
         />
       )}
       {isAdmin && <NullableBooleanInput source="missing" />}
@@ -135,82 +89,8 @@ const SongFilter = (props) => {
 }
 
 const SongList = (props) => {
-  const classes = useStyles()
-  const dispatch = useDispatch()
   const isXsmall = useMediaQuery((theme) => theme.breakpoints.down('xs'))
-  const isDesktop = useMediaQuery((theme) => theme.breakpoints.up('md'))
   useResourceRefresh('song')
-
-  const handleRowClick = (id, basePath, record) => {
-    dispatch(setTrack(record))
-  }
-
-  const toggleableFields = useMemo(() => {
-    return {
-      album: isDesktop && <AlbumLinkField source="album" sortByOrder={'ASC'} />,
-      artist: <ArtistLinkField source="artist" />,
-      composer: <ArtistLinkField source="composer" sortable={false} />,
-      albumArtist: <ArtistLinkField source="albumArtist" />,
-      trackNumber: isDesktop && (
-        <NumberField source="trackNumber" sortable={false} />
-      ),
-      playCount: isDesktop && (
-        <NumberField source="playCount" sortByOrder={'DESC'} />
-      ),
-      playDate: <DateField source="playDate" sortByOrder={'DESC'} showTime />,
-      year: isDesktop && (
-        <FunctionField
-          source="year"
-          render={(r) => r.year || ''}
-          sortByOrder={'DESC'}
-        />
-      ),
-      quality: isDesktop && <QualityInfo source="quality" sortable={false} />,
-      channels: isDesktop && (
-        <NumberField source="channels" sortByOrder={'ASC'} />
-      ),
-      duration: <DurationField source="duration" />,
-      rating: config.enableStarRating && (
-        <RatingField
-          source="rating"
-          sortByOrder={'DESC'}
-          resource={'song'}
-          className={classes.ratingField}
-        />
-      ),
-      bpm: isDesktop && <NumberField source="bpm" />,
-      genre: <TextField source="genre" />,
-      mood: isDesktop && (
-        <FunctionField
-          source="mood"
-          render={(r) => r.tags?.mood?.[0] || ''}
-          sortable={false}
-        />
-      ),
-      comment: <TextField source="comment" />,
-      path: <PathField source="path" />,
-      createdAt: (
-        <DateField source="createdAt" sortBy="recently_added" showTime />
-      ),
-    }
-  }, [isDesktop, classes.ratingField])
-
-  const columns = useSelectedFields({
-    resource: 'song',
-    columns: toggleableFields,
-    defaultOff: [
-      'composer',
-      'channels',
-      'bpm',
-      'playDate',
-      'albumArtist',
-      'genre',
-      'mood',
-      'comment',
-      'path',
-      'createdAt',
-    ],
-  })
 
   return (
     <>
@@ -227,34 +107,7 @@ const SongList = (props) => {
           isXsmall ? 50 : 15,
         )}
       >
-        {prototypeEnabled ? (
-          <SongListPrototype />
-        ) : isXsmall ? (
-          <SongSimpleList />
-        ) : (
-          <SongDatagrid
-            rowClick={handleRowClick}
-            contextAlwaysVisible={!isDesktop}
-            classes={{ row: classes.row }}
-          >
-            <SongTitleField source="title" showTrackNumbers={false} />
-            {columns}
-            <SongContextMenu
-              source={'starred_at'}
-              sortByOrder={'DESC'}
-              sortable={config.enableFavourites}
-              className={classes.contextMenu}
-              label={
-                config.enableFavourites && (
-                  <FavoriteBorderIcon
-                    fontSize={'small'}
-                    className={classes.contextHeader}
-                  />
-                )
-              }
-            />
-          </SongDatagrid>
-        )}
+        <ModernSongList />
       </List>
       <ExpandInfoDialog content={<SongInfo />} />
     </>

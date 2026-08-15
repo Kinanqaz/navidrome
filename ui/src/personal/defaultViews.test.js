@@ -4,7 +4,7 @@ import {
   isResourceDefaultView,
   resourceDefaultViews,
 } from './defaultViews'
-import albumLists, { defaultAlbumList } from '../album/albumLists'
+import albumLists from '../album/albumLists'
 
 describe('defaultViews', () => {
   beforeEach(() => {
@@ -38,8 +38,8 @@ describe('defaultViews', () => {
     expect(isResourceDefaultView('recentlyAdded')).toBe(false)
   })
 
-  it('falls back to the default album list when no default view is stored', () => {
-    expect(getStoredDefaultView()).toBe(defaultAlbumList)
+  it('falls back to songs when no default view is stored', () => {
+    expect(getStoredDefaultView()).toBe('song')
   })
 
   it('returns the stored default view', () => {

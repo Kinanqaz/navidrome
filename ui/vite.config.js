@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 const frontendPort = parseInt(process.env.PORT) || 4533
 const backendPort = frontendPort + 100
+const backendUrl =
+  process.env.NAVIDROME_BACKEND_URL || 'http://localhost:' + backendPort
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -29,7 +31,7 @@ export default defineConfig({
     host: true,
     port: frontendPort,
     proxy: {
-      '^/(auth|api|rest|backgrounds)/.*': 'http://localhost:' + backendPort,
+      '^/(auth|api|rest|backgrounds)/.*': backendUrl,
     },
   },
   base: './',
