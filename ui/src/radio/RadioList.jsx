@@ -1,18 +1,18 @@
 import { Avatar, makeStyles, useMediaQuery } from '@material-ui/core'
-import React, { cloneElement } from 'react'
+import React from 'react'
 import {
   CreateButton,
   Datagrid,
   DateField,
   EditButton,
   Filter,
-  sanitizeListRestProps,
   SearchInput,
   SimpleList,
   TextField,
-  TopToolbar,
   UrlField,
   useTranslate,
+  useListContext,
+  usePermissions,
 } from 'react-admin'
 import {
   List,
@@ -27,8 +27,10 @@ import { setTrack } from '../actions'
 import { songFromRadio } from './helper'
 import { RADIO_PLACEHOLDER_IMAGE } from '../consts'
 import { useDispatch } from 'react-redux'
+import { songFilterStyles } from '../song/SongList'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
+  ...songFilterStyles(theme),
   row: {
     '&:hover': {
       '& $contextMenu': {
@@ -39,44 +41,49 @@ const useStyles = makeStyles({
   contextMenu: {
     visibility: 'hidden',
   },
-})
+}))
 
-const RadioFilter = (props) => (
-  <Filter {...props} variant={'outlined'}>
-    <SearchInput id="search" source="name" alwaysOn />
-  </Filter>
-)
-
-const RadioListActions = ({
-  className,
-  filters,
-  resource,
-  showFilter,
-  displayedFilters,
-  filterValues,
-  isAdmin,
-  ...rest
-}) => {
-  const isNotSmall = useMediaQuery((theme) => theme.breakpoints.up('sm'))
+const RadioFilter = (props) => {
+  const classes = useStyles()
   const translate = useTranslate()
+  const { permissions } = usePermissions()
+  const isAdmin = permissions === 'admin'
+  const isNotSmall = useMediaQuery((theme) => theme.breakpoints.up('sm'))
+
+  if (props.context === 'button') {
+    return null
+  }
+
+  const filterElements = [
+    <SearchInput
+      id="search"
+      key="name"
+      source="name"
+      alwaysOn
+      className={classes.searchInput}
+    />,
+  ]
 
   return (
-    <TopToolbar className={className} {...sanitizeListRestProps(rest)}>
-      {isAdmin && (
-        <CreateButton basePath="/radio">
-          {translate('ra.action.create')}
-        </CreateButton>
-      )}
-      {filters &&
-        cloneElement(filters, {
-          resource,
-          showFilter,
-          displayedFilters,
-          filterValues,
-          context: 'button',
-        })}
-      {isNotSmall && <ToggleFieldsMenu resource="radio" />}
-    </TopToolbar>
+    <div className={classes.toolbarRoot}>
+      <div className={classes.leftGroup}>
+        <Filter
+          {...props}
+          variant="outlined"
+          classes={{ form: classes.filterForm }}
+        >
+          {filterElements}
+        </Filter>
+      </div>
+      <div className={classes.rightGroup}>
+        {isAdmin && (
+          <CreateButton basePath="/radio">
+            {translate('ra.action.create')}
+          </CreateButton>
+        )}
+        {isNotSmall && <ToggleFieldsMenu resource="radio" />}
+      </div>
+    </div>
   )
 }
 
@@ -151,7 +158,7 @@ const RadioList = ({ permissions, ...props }) => {
       sort={{ field: 'name', order: 'ASC' }}
       bulkActionButtons={isAdmin ? undefined : false}
       hasCreate={isAdmin}
-      actions={<RadioListActions isAdmin={isAdmin} />}
+      actions={false}
       filters={<RadioFilter />}
       perPage={getStoredPerPage(
         'radio',

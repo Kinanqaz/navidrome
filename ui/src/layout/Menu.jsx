@@ -1,38 +1,80 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
-import { Divider, makeStyles } from '@material-ui/core'
+import { Divider, Typography, makeStyles } from '@material-ui/core'
 import clsx from 'clsx'
 import { useTranslate, MenuItemLink, getResources } from 'react-admin'
 import ViewListIcon from '@material-ui/icons/ViewList'
-import AlbumIcon from '@material-ui/icons/Album'
 import CategoryOutlinedIcon from '@material-ui/icons/CategoryOutlined'
 import WbSunnyOutlinedIcon from '@material-ui/icons/WbSunnyOutlined'
-import SubMenu from './SubMenu'
 import { humanize, pluralize } from 'inflection'
-import albumLists from '../album/albumLists'
-import PlaylistsSubMenu from './PlaylistsSubMenu'
+import songLists from '../song/songLists'
 import LibrarySelector from '../common/LibrarySelector'
-import config from '../config'
 
 const useStyles = makeStyles((theme) => ({
   root: {
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
+    transition: theme.transitions.create(['width', 'padding'], {
+      easing: theme.transitions.easing.easeInOut,
+      duration: theme.transitions.duration.shorter,
     }),
-    paddingBottom: (props) => (props.addPadding ? '80px' : '20px'),
+    paddingBottom: (props) => (props.addPadding ? '80px' : '24px'),
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    userSelect: 'none',
   },
   open: {
     width: 240,
   },
   closed: {
-    width: 55,
+    width: 60,
+    paddingLeft: 4,
+    paddingRight: 4,
+  },
+  sectionHeader: {
+    fontSize: '0.7rem',
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    color: theme.palette.text.secondary,
+    opacity: 0.65,
+    padding: `${theme.spacing(1.5)}px ${theme.spacing(1.5)}px ${theme.spacing(0.5)}px`,
+    userSelect: 'none',
+  },
+  divider: {
+    margin: `${theme.spacing(1)}px ${theme.spacing(1)}px`,
+    opacity: 0.25,
+  },
+  menuItem: {
+    borderRadius: 8,
+    margin: '2px 0',
+    padding: '8px 12px',
+    transition: 'all 0.16s ease-in-out',
+    color: theme.palette.text.secondary,
+    '&:hover': {
+      backgroundColor:
+        theme.palette.type === 'dark'
+          ? 'rgba(255, 255, 255, 0.08)'
+          : 'rgba(0, 0, 0, 0.05)',
+      color: theme.palette.text.primary,
+      transform: 'translateX(3px)',
+    },
+    '& .RaMenuItemLink-icon': {
+      minWidth: 36,
+      color: 'inherit',
+      transition: 'color 0.16s ease-in-out',
+    },
   },
   active: {
-    color: theme.palette.text.primary,
-    fontWeight: 'bold',
+    color: `${theme.palette.text.primary} !important`,
+    fontWeight: 600,
+    backgroundColor:
+      theme.palette.type === 'dark'
+        ? 'rgba(255, 255, 255, 0.12) !important'
+        : 'rgba(0, 0, 0, 0.08) !important',
+    '& .RaMenuItemLink-icon': {
+      color: `${theme.palette.primary.main} !important`,
+    },
   },
 }))
 
@@ -54,59 +96,56 @@ const Menu = ({ dense = false }) => {
   const queue = useSelector((state) => state.player?.queue)
   const classes = useStyles({ addPadding: queue.length > 0 })
   const resources = useSelector(getResources)
-  const songResource = resources.find((resource) => resource.name === 'song')
-
-  // TODO State is not persisted in mobile when you close the sidebar menu. Move to redux?
-  const [state, setState] = useState({
-    menuAlbumList: true,
-    menuPlaylists: true,
-    menuSharedPlaylists: true,
-  })
-
-  const handleToggle = (menu) => {
-    setState((state) => ({ ...state, [menu]: !state[menu] }))
-  }
-
-  const renderResourceMenuItemLink = (resource) => (
-    <MenuItemLink
-      key={resource.name}
-      to={`/${resource.name}`}
-      activeClassName={classes.active}
-      primaryText={translatedResourceName(resource, translate)}
-      leftIcon={resource.icon || <ViewListIcon />}
-      sidebarIsOpen={open}
-      dense={dense}
-    />
+  const resourcesByName = new Map(
+    resources.map((resource) => [resource.name, resource]),
   )
 
-  const renderAlbumMenuItemLink = (type, al) => {
-    const resource = resources.find((r) => r.name === 'album')
-    if (!resource) {
-      return null
-    }
+  const songResource = resourcesByName.get('song')
+  const albumResource = resourcesByName.get('album')
+  const artistResource = resourcesByName.get('artist')
+  const playlistResource = resourcesByName.get('playlist')
+  const radioResource = resourcesByName.get('radio')
+  const shareResource = resourcesByName.get('share')
 
-    const albumListAddress = `/album/${type}`
+  const renderResourceMenuItemLink = (
+    resource,
+    target = resource ? `/${resource.name}` : '',
+  ) => {
+    if (!resource) return null
+    return (
+      <MenuItemLink
+        key={resource.name}
+        to={target}
+        activeClassName={classes.active}
+        className={classes.menuItem}
+        primaryText={translatedResourceName(resource, translate)}
+        leftIcon={resource.icon || <ViewListIcon />}
+        sidebarIsOpen={open}
+        dense={dense}
+      />
+    )
+  }
 
-    const name = translate(`resources.album.lists.${type || 'default'}`, {
-      _: translatedResourceName(resource, translate),
+  const renderSongListMenuItemLink = (type, songList) => {
+    const songListAddress = `/song/${type}`
+    const name = translate(`resources.album.lists.${type}`, {
+      _: humanize(type),
     })
 
     return (
       <MenuItemLink
-        key={albumListAddress}
-        to={albumListAddress}
+        key={songListAddress}
+        to={songListAddress}
         activeClassName={classes.active}
+        className={classes.menuItem}
         primaryText={name}
-        leftIcon={al.icon || <ViewListIcon />}
+        leftIcon={songList.icon || <ViewListIcon />}
         sidebarIsOpen={open}
         dense={dense}
         exact
       />
     )
   }
-
-  const subItems = (subMenu) => (resource) =>
-    resource.hasList && resource.options && resource.options.subMenu === subMenu
 
   return (
     <div
@@ -116,10 +155,32 @@ const Menu = ({ dense = false }) => {
       })}
     >
       {open && <LibrarySelector />}
-      {songResource && renderResourceMenuItemLink(songResource)}
+
+      {/* Library Section */}
+      {open && (
+        <Typography className={classes.sectionHeader}>
+          {translate('menu.library', { _: 'Library' })}
+        </Typography>
+      )}
+      {renderResourceMenuItemLink(songResource)}
+      {renderResourceMenuItemLink(albumResource, '/album/all')}
+      {renderResourceMenuItemLink(artistResource)}
+      {renderResourceMenuItemLink(playlistResource)}
+
+      {/* Discover Section */}
+      <Divider className={classes.divider} />
+      {open && (
+        <Typography className={classes.sectionHeader}>
+          {translate('menu.discover', { _: 'Discover' })}
+        </Typography>
+      )}
+      {Object.keys(songLists).map((type) =>
+        renderSongListMenuItemLink(type, songLists[type]),
+      )}
       <MenuItemLink
         to="/categories"
         activeClassName={classes.active}
+        className={classes.menuItem}
         primaryText="Categories"
         leftIcon={<CategoryOutlinedIcon />}
         sidebarIsOpen={open}
@@ -128,40 +189,17 @@ const Menu = ({ dense = false }) => {
       <MenuItemLink
         to="/moods"
         activeClassName={classes.active}
+        className={classes.menuItem}
         primaryText="Moods"
         leftIcon={<WbSunnyOutlinedIcon />}
         sidebarIsOpen={open}
         dense={dense}
       />
-      <SubMenu
-        handleToggle={() => handleToggle('menuAlbumList')}
-        isOpen={state.menuAlbumList}
-        sidebarIsOpen={open}
-        name="menu.albumList"
-        icon={<AlbumIcon />}
-        dense={dense}
-      >
-        {Object.keys(albumLists).map((type) =>
-          renderAlbumMenuItemLink(type, albumLists[type]),
-        )}
-      </SubMenu>
-      {resources
-        .filter(subItems(undefined))
-        .filter((resource) => resource.name !== 'song')
-        .map(renderResourceMenuItemLink)}
-      {config.devSidebarPlaylists && open ? (
-        <>
-          <Divider />
-          <PlaylistsSubMenu
-            state={state}
-            setState={setState}
-            sidebarIsOpen={open}
-            dense={dense}
-          />
-        </>
-      ) : (
-        resources.filter(subItems('playlist')).map(renderResourceMenuItemLink)
-      )}
+
+      {/* Radios and Shares Section */}
+      <Divider className={classes.divider} />
+      {renderResourceMenuItemLink(radioResource)}
+      {renderResourceMenuItemLink(shareResource)}
     </div>
   )
 }

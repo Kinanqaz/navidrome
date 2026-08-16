@@ -26,9 +26,16 @@ const useStyles = makeStyles((theme) => ({
   title: { fontSize: '1.35rem', fontWeight: 750 },
   card: {
     height: '100%',
-    border: `1px solid ${theme.palette.divider}`,
+    backgroundColor: alpha(theme.palette.background.paper, 0.4),
+    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
     borderRadius: theme.spacing(1.5),
     boxShadow: 'none',
+    transition: 'all 0.18s ease-in-out',
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.action.hover, 0.7),
+      borderColor: alpha(theme.palette.primary.main, 0.5),
+      transform: 'translateY(-2px)',
+    },
   },
   action: { height: '100%' },
   content: {

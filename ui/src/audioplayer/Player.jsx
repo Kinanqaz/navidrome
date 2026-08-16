@@ -35,6 +35,7 @@ import keyHandlers from './keyHandlers'
 import { calculateGain } from '../utils/calculateReplayGain'
 import { detectBrowserProfile, decisionService } from '../transcode'
 import DesktopPlayerResizeHandle from './DesktopPlayerResizeHandle'
+import MobilePlayerBar from './MobilePlayerBar'
 
 const Player = () => {
   const theme = useCurrentTheme()
@@ -50,6 +51,8 @@ const Player = () => {
   const stoppedRef = useRef(false)
   const [audioInstance, setAudioInstance] = useState(null)
   const isDesktop = useMediaQuery('(min-width:810px)')
+  const isPhone = useMediaQuery('(max-width:767px)')
+  const [mobileExpanded, setMobileExpanded] = useState(false)
   const isMobilePlayer =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent,
@@ -128,9 +131,21 @@ const Player = () => {
 
   const visible = authenticated && playerState.queue.length > 0
   const isRadio = playerState.current?.isRadio || false
+  const currentCover =
+    playerState.current?.cover ||
+    playerState.queue[playerState.playIndex]?.cover ||
+    ''
+  const mobileTrack =
+    (playerState.current?.uuid && playerState.current) ||
+    playerState.queue[
+      playerState.playIndex ?? playerState.savedPlayIndex ?? 0
+    ] ||
+    {}
   const classes = useStyle({
     isRadio,
     visible,
+    isDesktop,
+    coverUrl: currentCover,
     enableCoverAnimation: config.enableCoverAnimation,
   })
   const showNotifications = useSelector(
@@ -216,8 +231,8 @@ const Player = () => {
       showDownload: false,
       showLyric: true,
       showReload: false,
-      toggleMode: !isDesktop,
-      glassBg: false,
+      toggleMode: false,
+      glassBg: isDesktop,
       showThemeSwitch: false,
       showMediaSession: true,
       restartCurrentOnPrev: true,
@@ -244,6 +259,7 @@ const Player = () => {
     const current = playerState.current || {}
     return {
       ...defaultOptions,
+      mode: isPhone && !mobileExpanded ? 'mini' : 'full',
       audioLists: playerState.queue.map((item) => item),
       playIndex: playerState.playIndex,
       autoPlay:
@@ -257,7 +273,17 @@ const Player = () => {
       defaultVolume: isMobilePlayer ? 1 : playerState.volume,
       showMediaSession: !current.isRadio,
     }
-  }, [playerState, defaultOptions, isMobilePlayer])
+  }, [
+    playerState,
+    defaultOptions,
+    isMobilePlayer,
+    isPhone,
+    mobileExpanded,
+  ])
+
+  useEffect(() => {
+    if (!isPhone || !visible) setMobileExpanded(false)
+  }, [isPhone, visible])
 
   const onAudioListsChange = useCallback(
     (_, audioLists, audioInfo) => dispatch(syncQueue(audioInfo, audioLists)),
@@ -454,9 +480,144 @@ const Player = () => {
     }
   }, [audioInstance])
 
+  const dismissMobilePlayer = useCallback(() => {
+    const el = document.querySelector('.react-jinke-music-player-mobile')
+    if (el) {
+      el.style.transition =
+        'transform 220ms cubic-bezier(0.32, 0.72, 0, 1), opacity 220ms ease'
+      el.style.transform = 'translate3d(0, 100%, 0)'
+      el.style.opacity = '0.3'
+      setTimeout(() => {
+        setMobileExpanded(false)
+      }, 220)
+    } else {
+      setMobileExpanded(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!visible || !isPhone || !mobileExpanded) return undefined
+
+    let startY = 0
+    let startX = 0
+    let startTime = 0
+    let mobileEl = null
+
+    const getMobileEl = () => {
+      if (!mobileEl || !mobileEl.isConnected) {
+        mobileEl = document.querySelector('.react-jinke-music-player-mobile')
+      }
+      return mobileEl
+    }
+
+    const handleTouchStart = (e) => {
+      if (e.touches.length !== 1) return
+      const touch = e.touches[0]
+      startY = touch.clientY
+      startX = touch.clientX
+      startTime = Date.now()
+
+      const target = e.target
+      if (
+        target?.closest?.('.rc-slider') ||
+        target?.closest?.('.rc-slider-handle') ||
+        target?.closest?.('input[type="range"]')
+      ) {
+        startY = -1
+        return
+      }
+
+      const scrollable = target?.closest?.(
+        '.audio-lists-panel-content, .music-player-lyric',
+      )
+      if (scrollable && scrollable.scrollTop > 5) {
+        startY = -1
+      }
+    }
+
+    const handleTouchMove = (e) => {
+      if (startY < 0 || e.touches.length !== 1) return
+      const touch = e.touches[0]
+      const deltaY = touch.clientY - startY
+      const deltaX = touch.clientX - startX
+
+      if (deltaY > 0 && deltaY > Math.abs(deltaX) * 0.75) {
+        const el = getMobileEl()
+        if (el) {
+          el.style.transition = 'none'
+          el.style.transform = `translate3d(0, ${deltaY}px, 0)`
+          const opacityProgress = Math.min(deltaY / 380, 1)
+          el.style.opacity = `${1 - opacityProgress * 0.45}`
+        }
+      }
+    }
+
+    const handleTouchEnd = (e) => {
+      if (startY < 0) return
+      const touch = e.changedTouches?.[0]
+      if (!touch) return
+
+      const deltaY = touch.clientY - startY
+      const deltaX = touch.clientX - startX
+      const elapsed = Date.now() - startTime
+      const velocityY = deltaY / Math.max(elapsed, 1)
+      const el = getMobileEl()
+
+      if (
+        (deltaY >= 50 || (deltaY >= 20 && velocityY >= 0.25)) &&
+        deltaY > Math.abs(deltaX) * 0.75
+      ) {
+        dismissMobilePlayer()
+      } else if (el && deltaY > 0) {
+        el.style.transition =
+          'transform 200ms cubic-bezier(0.32, 0.72, 0, 1), opacity 200ms ease'
+        el.style.transform = 'translate3d(0, 0, 0)'
+        el.style.opacity = '1'
+      }
+
+      startY = -1
+    }
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: true })
+    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('touchend', handleTouchEnd)
+      if (mobileEl) {
+        mobileEl.style.transform = ''
+        mobileEl.style.transition = ''
+        mobileEl.style.opacity = ''
+      }
+    }
+  }, [visible, isPhone, mobileExpanded, dismissMobilePlayer])
+
   return (
     <ThemeProvider theme={createMuiTheme(theme)}>
+      <div className={classes.ambientBackdrop} aria-hidden="true" />
       <DesktopPlayerResizeHandle visible={visible && isDesktop} />
+      {visible && isPhone && !mobileExpanded && (
+        <MobilePlayerBar
+          audio={audioInstance}
+          cover={mobileTrack.cover}
+          title={mobileTrack.name || mobileTrack.song?.title}
+          artist={mobileTrack.singer || mobileTrack.song?.artist}
+          onOpen={() => setMobileExpanded(true)}
+        />
+      )}
+      {visible && isPhone && mobileExpanded && (
+        <div
+          className={classes.mobileDragHandle}
+          onClick={dismissMobilePlayer}
+          role="button"
+          tabIndex={0}
+          aria-label="Collapse full-screen player"
+        >
+          <span className={classes.mobileDragPill} />
+        </div>
+      )}
       <ReactJkMusicPlayer
         {...options}
         className={classes.player}

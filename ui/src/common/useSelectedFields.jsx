@@ -83,21 +83,24 @@ export const useSetToggleableFields = (
   toggleableColumns,
   defaultOff = [],
 ) => {
-  const current = useSelector((state) => state.settings.toggleableFields)?.album
+  const current = useSelector(
+    (state) => state.settings.toggleableFields,
+  )?.[resource]
   const dispatch = useDispatch()
   useEffect(() => {
-    if (!current) {
+    if (!current || !toggleableColumns.every((col) => col in current)) {
+      const merged = { ...(current || {}) }
+      toggleableColumns.forEach((col) => {
+        if (!(col in merged)) {
+          merged[col] = !defaultOff.includes(col)
+        }
+      })
       dispatch(
         setToggleableFields({
-          [resource]: toggleableColumns.reduce((acc, cur) => {
-            return {
-              ...acc,
-              ...{ [cur]: true },
-            }
-          }, {}),
+          [resource]: merged,
         }),
       )
-      dispatch(setOmittedFields({ [resource]: defaultOff }))
+      dispatch(setOmittedFields({ [resource]: [] }))
     }
   }, [resource, toggleableColumns, dispatch, current, defaultOff])
 }

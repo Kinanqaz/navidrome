@@ -1,4 +1,4 @@
-import { makeStyles } from '@material-ui/core/styles'
+import { alpha, makeStyles } from '@material-ui/core/styles'
 
 export const desktopPlayerDefaultWidth = 480
 export const desktopPlayerMinWidth = 420
@@ -37,14 +37,51 @@ const useStyle = makeStyles(
       display: 'block',
       marginTop: '2px',
     },
-    songAlbum: {
-      fontStyle: 'italic',
-      fontSize: 'smaller',
-    },
     qualityInfo: {
       marginTop: '-4px',
       opacity: 0,
       transition: 'all 500ms ease-out',
+    },
+    ambientBackdrop: {
+      position: 'fixed',
+      top: theme.spacing(6),
+      right: 0,
+      bottom: 0,
+      width: desktopPlayerWidth,
+      zIndex: 98,
+      overflow: 'hidden',
+      pointerEvents: 'none',
+      display: (props) => (props.visible && props.isDesktop ? 'block' : 'none'),
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: '-25%',
+        left: '-25%',
+        width: '150%',
+        height: '150%',
+        backgroundImage: (props) =>
+          props.coverUrl ? `url(${props.coverUrl})` : 'none',
+        backgroundPosition: 'center',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        filter: 'blur(65px) saturate(220%) brightness(0.65)',
+        transform: 'scale(1.2)',
+        transition: 'background-image 0.8s ease-in-out, opacity 0.8s ease',
+        opacity: (props) => (props.coverUrl ? 0.85 : 0),
+      },
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background:
+          'linear-gradient(180deg, rgba(12, 12, 18, 0.4) 0%, rgba(8, 8, 14, 0.75) 100%)',
+      },
+      [theme.breakpoints.down('sm')]: {
+        display: 'none',
+      },
     },
     resizeHandle: {
       position: 'fixed',
@@ -83,11 +120,113 @@ const useStyle = makeStyles(
         display: 'none',
       },
     },
+    mobileDragHandle: {
+      position: 'fixed',
+      top: 'max(8px, env(safe-area-inset-top))',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 1001,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 80,
+      height: 28,
+      cursor: 'pointer',
+      touchAction: 'none',
+      WebkitTapHighlightColor: 'transparent',
+    },
+    mobileDragPill: {
+      width: 38,
+      height: 4.5,
+      borderRadius: 3,
+      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
+      transition: 'background-color 0.15s ease, transform 0.15s ease',
+      '$mobileDragHandle:hover &': {
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        transform: 'scaleX(1.15)',
+      },
+    },
+    '@keyframes mobileSlideUp': {
+      '0%': {
+        transform: 'translate3d(0, 100%, 0)',
+        opacity: 0.6,
+      },
+      '100%': {
+        transform: 'translate3d(0, 0, 0)',
+        opacity: 1,
+      },
+    },
     player: {
       display: (props) => (props.visible ? 'block' : 'none'),
       '@media screen and (max-width:810px)': {
         '& .sound-operation': {
           display: 'none',
+        },
+      },
+      '@media screen and (max-width:767px)': {
+        '& > .react-jinke-music-player': {
+          display: 'none !important',
+        },
+        '& .react-jinke-music-player-mobile': {
+          padding: 'max(64px, calc(48px + env(safe-area-inset-top))) 20px max(20px, env(safe-area-inset-bottom))',
+          background:
+            'linear-gradient(180deg, rgba(25, 25, 31, 0.98) 0%, rgba(8, 8, 12, 1) 100%)',
+          willChange: 'transform, opacity',
+          animation: '$mobileSlideUp 240ms cubic-bezier(0.32, 0.72, 0, 1)',
+        },
+        '& .react-jinke-music-player-mobile-header': {
+          minHeight: 38,
+        },
+        '& .react-jinke-music-player-mobile-header-title': {
+          width: '100%',
+          fontSize: '1.15rem',
+          fontWeight: 700,
+        },
+        '& .react-jinke-music-player-mobile-cover': {
+          width: 'min(78vw, 420px) !important',
+          height: 'auto !important',
+          margin: '16px auto !important',
+          border: '0 !important',
+          borderRadius: '18px !important',
+          boxShadow: '0 20px 48px rgba(0, 0, 0, 0.42) !important',
+        },
+        '& .react-jinke-music-player-mobile-cover img.cover': {
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          animation: 'none !important',
+          transform: 'none !important',
+        },
+        '& .react-jinke-music-player-mobile-progress': {
+          marginTop: 8,
+        },
+        '& .react-jinke-music-player-mobile-toggle': {
+          padding: '20px 0 14px',
+        },
+        '& .react-jinke-music-player-mobile-toggle .play-btn': {
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 64,
+          height: 64,
+          margin: '0 24px',
+          padding: '0 !important',
+          color: '#111',
+          backgroundColor: '#fff',
+          borderRadius: '50%',
+        },
+        '& .react-jinke-music-player-mobile-toggle .play-btn svg': {
+          color: '#111 !important',
+          fontSize: '38px !important',
+        },
+        // Remove the entrance animation from the operation section so its
+        // persistent transform (from animation-fill-mode:forwards) does not
+        // create a containing block that traps position:fixed descendants
+        // (i.e. the 3-dots context menu button).
+        '& .react-jinke-music-player-mobile-operation': {
+          animation: 'none !important',
+          transform: 'none !important',
         },
       },
       '@media (prefers-reduced-motion)': {
@@ -100,7 +239,7 @@ const useStyle = makeStyles(
         flexDirection: 'column',
       },
       '& .play-mode-title': {
-        'pointer-events': 'none',
+        pointerEvents: 'none',
       },
       '& .music-player-panel .panel-content div.img-rotate': {
         // Customize desktop player when cover animation is disabled
@@ -151,14 +290,35 @@ const useStyle = makeStyles(
           left: 'auto',
           width: desktopPlayerWidth,
           height: `calc(100vh - ${theme.spacing(6)}px)`,
-          borderLeft: `1px solid ${theme.palette.divider}`,
+          borderLeft: '1px solid rgba(255, 255, 255, 0.12)',
           boxShadow: theme.shadows[8],
+          backgroundColor: 'rgba(15, 15, 22, 0.35) !important',
+          backdropFilter: 'blur(30px)',
+          overflow: 'hidden',
+        },
+        '& .music-player-panel .glass-bg-container': {
+          position: 'absolute',
+          top: '-15%',
+          left: '-15%',
+          width: '130%',
+          height: '130%',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          filter: 'blur(70px) saturate(180%) brightness(0.55)',
+          opacity: 0.65,
+          zIndex: 0,
+          pointerEvents: 'none',
+          transition: 'background-image 0.6s ease',
         },
         '& .music-player-panel .panel-content': {
+          position: 'relative',
+          zIndex: 1,
           flexDirection: 'column',
           justifyContent: 'flex-start',
           padding: theme.spacing(3),
           overflowY: 'auto',
+          backgroundColor: 'transparent !important',
         },
         '& .music-player-panel .panel-content .img-content': {
           flex: '0 0 auto',
@@ -166,70 +326,409 @@ const useStyle = makeStyles(
           height: 'auto',
           aspectRatio: '1 / 1',
           marginTop: theme.spacing(1),
-          borderRadius: theme.spacing(2),
+          borderRadius: theme.spacing(2.5),
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          boxShadow: theme.shadows[8],
+          boxShadow: '0 16px 36px -8px rgba(0, 0, 0, 0.55)',
+          animation: 'none !important',
+          transform: 'none !important',
+          '& .img-rotate': {
+            animation: 'none !important',
+            transform: 'none !important',
+          },
         },
         '& .music-player-panel .panel-content .progress-bar-content': {
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
           flex: '0 0 auto',
           width: '100%',
-          padding: theme.spacing(3, 0, 2),
+          padding: theme.spacing(2.5, 0, 1),
           textAlign: 'center',
         },
         '& .music-player-panel .panel-content .progress-bar-content .audio-title':
           {
-            fontSize: '1rem',
-            lineHeight: 1.5,
+            display: 'block !important',
+            width: '100%',
+            marginBottom: `${theme.spacing(1.5)}px !important`,
+            fontSize: '1.1rem',
+            fontWeight: 700,
+            lineHeight: 1.4,
+            color: '#ffffff !important',
+            textShadow: '0 2px 8px rgba(0, 0, 0, 0.6)',
+            whiteSpace: 'normal',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           },
         '& .music-player-panel .panel-content .progress-bar-content .audio-main':
           {
+            display: 'flex',
             alignItems: 'center',
-            marginTop: theme.spacing(2),
+            width: '100%',
+            margin: 0,
           },
         '& .music-player-panel .panel-content .progress-bar-content .audio-main .current-time, & .music-player-panel .panel-content .progress-bar-content .audio-main .duration':
           {
-            flexBasis: 38,
+            flexBasis: 42,
             fontVariantNumeric: 'tabular-nums',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            color: '#ffffff !important',
+            opacity: 0.9,
+            textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)',
           },
         '& .music-player-panel .panel-content .progress-bar-content .audio-main .progress-bar':
           {
+            flex: 1,
             margin: theme.spacing(0, 1.5),
           },
+        '& .music-player-panel .panel-content .progress-bar-content .rc-slider-rail':
+          {
+            height: '5px !important',
+            borderRadius: '2.5px !important',
+            backgroundColor: 'rgba(255, 255, 255, 0.25) !important',
+          },
+        '& .music-player-panel .panel-content .progress-bar-content .rc-slider-track':
+          {
+            height: '5px !important',
+            borderRadius: '2.5px !important',
+            backgroundColor: '#ffffff !important',
+          },
+        '& .music-player-panel .panel-content .progress-bar-content .rc-slider-handle':
+          {
+            width: '14px !important',
+            height: '14px !important',
+            marginTop: '-4.5px !important',
+            backgroundColor: '#ffffff !important',
+            border: 'none !important',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.45) !important',
+            transition: 'transform 0.15s ease',
+            '&:hover, &:active': {
+              transform: 'scale(1.25)',
+            },
+          },
         '& .music-player-panel .panel-content .player-content': {
-          display: 'flex',
-          flex: '0 0 auto',
-          flexBasis: 'auto',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          width: '100%',
-          padding: 0,
-          gap: theme.spacing(1),
+          display: 'flex !important',
+          flexWrap: 'wrap !important',
+          alignItems: 'center !important',
+          justifyContent: 'center !important',
+          width: '100% !important',
+          padding: '0 !important',
+          margin: '0 !important',
         },
+        // Row 1: Primary Playback Controls (Prev, Big Play/Pause Circle, Next)
         '& .music-player-panel .panel-content .player-content > .group:first-child':
           {
-            flex: '0 0 100%',
-            justifyContent: 'center',
-            margin: theme.spacing(0, 0, 1),
+            order: '1 !important',
+            flex: '0 0 100% !important',
+            display: 'flex !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+            margin: `${theme.spacing(2.5)}px 0 ${theme.spacing(1)}px !important`,
+            gap: `${theme.spacing(2)}px !important`,
           },
-        '& .music-player-panel .panel-content .player-content .prev-audio svg, & .music-player-panel .panel-content .player-content .next-audio svg':
+        '& .music-player-panel .panel-content .player-content .prev-audio, & .music-player-panel .panel-content .player-content .next-audio':
           {
-            fontSize: 48,
+            display: 'inline-flex !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+            width: '48px !important',
+            height: '48px !important',
+            borderRadius: '50% !important',
+            backgroundColor: 'rgba(255, 255, 255, 0.08) !important',
+            color: '#ffffff !important',
+            cursor: 'pointer !important',
+            transition: theme.transitions.create(
+              ['background-color', 'transform'],
+              {
+                duration: theme.transitions.duration.shortest,
+              },
+            ),
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.18) !important',
+              transform: 'scale(1.1) !important',
+            },
+            '&:active': {
+              transform: 'scale(0.92) !important',
+            },
           },
-        '& .music-player-panel .panel-content .player-content .play-btn svg': {
-          fontSize: 52,
+        '& .music-player-panel .panel-content .player-content .prev-audio': {
+          marginRight: `${theme.spacing(2)}px !important`,
         },
         '& .music-player-panel .panel-content .player-content .play-btn': {
-          padding: theme.spacing(0, 2.5),
+          display: 'inline-flex !important',
+          alignItems: 'center !important',
+          justifyContent: 'center !important',
+          width: '62px !important',
+          height: '62px !important',
+          padding: '0 !important',
+          margin: `0 ${theme.spacing(2)}px !important`,
+          borderRadius: '50% !important',
+          backgroundColor: '#ffffff !important',
+          color: '#121212 !important',
+          boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4) !important',
+          cursor: 'pointer !important',
+          transition: theme.transitions.create(
+            ['transform', 'box-shadow', 'background-color'],
+            {
+              duration: theme.transitions.duration.shortest,
+            },
+          ),
+          '&:hover': {
+            transform: 'scale(1.06) !important',
+            boxShadow: '0 8px 26px rgba(0, 0, 0, 0.5) !important',
+          },
+          '&:active': {
+            transform: 'scale(0.94) !important',
+          },
         },
+        '& .music-player-panel .panel-content .player-content .next-audio': {
+          marginLeft: `${theme.spacing(2)}px !important`,
+        },
+        '& .music-player-panel .panel-content .player-content .prev-audio svg, & .music-player-panel .panel-content .player-content .next-audio svg':
+          {
+            fontSize: '28px !important',
+            color: '#ffffff !important',
+            fill: 'currentColor !important',
+          },
+        '& .music-player-panel .panel-content .player-content .play-btn svg': {
+          fontSize: '32px !important',
+          color: '#121212 !important',
+          fill: '#121212 !important',
+        },
+        // Row 2: Centered Volume Control (Speaker Icon + Slider side-by-side)
         '& .music-player-panel .panel-content .player-content .play-sounds': {
-          flex: '1 0 100%',
-          justifyContent: 'center',
-          margin: theme.spacing(1, 0),
+          order: '2 !important',
+          flex: '0 0 100% !important',
+          display: 'flex !important',
+          flexDirection: 'row !important',
+          alignItems: 'center !important',
+          justifyContent: 'center !important',
+          margin: `${theme.spacing(2.5)}px 0 ${theme.spacing(1.5)}px !important`,
+          padding: '0 !important',
+          gap: `${theme.spacing(1.5)}px !important`,
         },
+        '& .music-player-panel .panel-content .player-content .play-sounds .sounds-icon':
+          {
+            display: 'inline-flex !important',
+            flex: '0 0 auto !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+            margin: '0 !important',
+            padding: '0 !important',
+            cursor: 'pointer !important',
+          },
+        '& .music-player-panel .panel-content .player-content .play-sounds .sounds-icon > svg':
+          {
+            fontSize: '22px !important',
+            color: 'rgba(255, 255, 255, 0.85) !important',
+            transition: 'color 0.2s ease !important',
+            '&:hover': {
+              color: '#ffffff !important',
+            },
+          },
         '& .music-player-panel .panel-content .player-content .play-sounds .sound-operation':
           {
-            width: 180,
+            width: '190px !important',
+            flex: '0 0 190px !important',
+            position: 'relative !important',
+            display: 'flex !important',
+            alignItems: 'center !important',
+            margin: '0 !important',
+            padding: '0 !important',
+          },
+        '& .music-player-panel .panel-content .player-content .play-sounds .sound-operation .rc-slider':
+          {
+            width: '100% !important',
+          },
+        '& .music-player-panel .panel-content .player-content .play-sounds .sound-operation .rc-slider-rail':
+          {
+            height: '4px !important',
+            borderRadius: '2px !important',
+            backgroundColor: 'rgba(255, 255, 255, 0.2) !important',
+          },
+        '& .music-player-panel .panel-content .player-content .play-sounds .sound-operation .rc-slider-track':
+          {
+            height: '4px !important',
+            borderRadius: '2px !important',
+            backgroundColor: '#ffffff !important',
+          },
+        '& .music-player-panel .panel-content .player-content .play-sounds .sound-operation .rc-slider-handle':
+          {
+            width: '12px !important',
+            height: '12px !important',
+            marginTop: '-4px !important',
+            backgroundColor: '#ffffff !important',
+            border: 'none !important',
+            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.35) !important',
+          },
+        // Row 3: Secondary Utility Toolbar (Save, Love, Lyrics, Loop, Queue, Destroy in ONE neat centered row)
+        '& .music-player-panel .panel-content .player-content > li, & .music-player-panel .panel-content .player-content .desktop-toolbar':
+          {
+            order: '3 !important',
+            flex: '0 0 auto !important',
+            display: 'inline-flex !important',
+            flexDirection: 'row !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+            gap: `${theme.spacing(1.5)}px !important`,
+            margin: `${theme.spacing(2.5)}px ${theme.spacing(1)}px 0 !important`,
+            padding: '0 !important',
+            listStyle: 'none !important',
+          },
+        '& .music-player-panel .panel-content .player-content .desktop-toolbar button':
+          {
+            display: 'inline-flex !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+            width: '38px !important',
+            height: '38px !important',
+            borderRadius: '50% !important',
+            backgroundColor: 'rgba(255, 255, 255, 0.08) !important',
+            color: '#ffffff !important',
+            border: 'none !important',
+            cursor: 'pointer !important',
+            transition: theme.transitions.create(
+              ['background-color', 'transform'],
+              {
+                duration: theme.transitions.duration.shortest,
+              },
+            ),
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.18) !important',
+              transform: 'scale(1.1) !important',
+            },
+            '& svg': {
+              fontSize: '20px !important',
+              color: '#ffffff !important',
+            },
+          },
+        '& .music-player-panel .panel-content .player-content .lyric-btn, & .music-player-panel .panel-content .player-content .loop-btn':
+          {
+            order: '3 !important',
+            flex: '0 0 auto !important',
+            display: 'inline-flex !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+            width: '38px !important',
+            height: '38px !important',
+            borderRadius: '50% !important',
+            backgroundColor: 'rgba(255, 255, 255, 0.08) !important',
+            color: '#ffffff !important',
+            margin: `${theme.spacing(2.5)}px ${theme.spacing(1)}px 0 !important`,
+            cursor: 'pointer !important',
+            transition: theme.transitions.create(
+              ['background-color', 'transform'],
+              {
+                duration: theme.transitions.duration.shortest,
+              },
+            ),
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.18) !important',
+              transform: 'scale(1.1) !important',
+            },
+            '&:active': {
+              transform: 'scale(0.94) !important',
+            },
+          },
+        '& .music-player-panel .panel-content .player-content .lyric-btn svg, & .music-player-panel .panel-content .player-content .loop-btn svg':
+          {
+            fontSize: '20px !important',
+            color: '#ffffff !important',
+            fill: 'currentColor !important',
+          },
+        // Floating Top-Left 3-Dots Context Menu Button
+        '& .music-player-panel .panel-content .player-content .player-corner-menu':
+          {
+            position: 'absolute !important',
+            top: `${theme.spacing(2)}px !important`,
+            left: `${theme.spacing(2)}px !important`,
+            zIndex: 10,
+            display: 'inline-flex !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+          },
+        // Floating Top-Right Close ("X") Dismiss Button
+        '& .music-player-panel .panel-content .player-content .destroy-btn': {
+          position: 'absolute !important',
+          top: `${theme.spacing(2)}px !important`,
+          right: `${theme.spacing(2)}px !important`,
+          zIndex: 10,
+          display: 'inline-flex !important',
+          alignItems: 'center !important',
+          justifyContent: 'center !important',
+          width: '36px !important',
+          height: '36px !important',
+          borderRadius: '50% !important',
+          backgroundColor: 'rgba(255, 255, 255, 0.12) !important',
+          color: 'rgba(255, 255, 255, 0.85) !important',
+          backdropFilter: 'blur(8px) !important',
+          margin: '0 !important',
+          cursor: 'pointer !important',
+          transition: theme.transitions.create(
+            ['background-color', 'transform', 'color'],
+            {
+              duration: theme.transitions.duration.shortest,
+            },
+          ),
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.25) !important',
+            color: '#ffffff !important',
+            transform: 'scale(1.08) !important',
+          },
+          '&:active': {
+            transform: 'scale(0.92) !important',
+          },
+        },
+        '& .music-player-panel .panel-content .player-content .destroy-btn svg':
+          {
+            fontSize: '20px !important',
+            color: 'inherit !important',
+            fill: 'currentColor !important',
+          },
+        '& .music-player-panel .panel-content .player-content .audio-lists-btn':
+          {
+            order: '3 !important',
+            flex: '0 0 auto !important',
+            display: 'inline-flex !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+            height: '38px !important',
+            minWidth: '54px !important',
+            boxSizing: 'border-box !important',
+            margin: `${theme.spacing(2.5)}px ${theme.spacing(1)}px 0 !important`,
+            padding: `${theme.spacing(0, 1.5)}px !important`,
+            borderRadius: '19px !important',
+            backgroundColor: 'rgba(255, 255, 255, 0.08) !important',
+            color: '#ffffff !important',
+            fontSize: '0.8rem !important',
+            fontWeight: '600 !important',
+            cursor: 'pointer !important',
+            verticalAlign: 'middle !important',
+            lineHeight: '1 !important',
+            gap: `${theme.spacing(0.75)}px !important`,
+            transition: theme.transitions.create(
+              ['background-color', 'transform'],
+              {
+                duration: theme.transitions.duration.shortest,
+              },
+            ),
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.18) !important',
+              transform: 'scale(1.05) !important',
+            },
+            '& .audio-lists-icon, & .audio-lists-num': {
+              display: 'inline-flex !important',
+              alignItems: 'center !important',
+              justifyContent: 'center !important',
+              lineHeight: '1 !important',
+            },
+            '& svg': {
+              fontSize: '18px !important',
+              color: '#ffffff !important',
+              display: 'block !important',
+              verticalAlign: 'middle !important',
+            },
           },
         '& .music-player-lyric': {
           top: theme.spacing(10),

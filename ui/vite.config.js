@@ -29,7 +29,11 @@ export default defineConfig({
     host: true,
     port: frontendPort,
     proxy: {
-      '^/(auth|api|rest|backgrounds)/.*': 'http://localhost:' + backendPort,
+      '^/(auth|api|rest|backgrounds)/.*': {
+        target: 'https://demo.navidrome.org',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   base: './',

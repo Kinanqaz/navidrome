@@ -1,21 +1,10 @@
-import React, { cloneElement } from 'react'
-import {
-  Button,
-  sanitizeListRestProps,
-  TopToolbar,
-  useTranslate,
-} from 'react-admin'
-import {
-  ButtonGroup,
-  useMediaQuery,
-  Typography,
-  makeStyles,
-} from '@material-ui/core'
+import React from 'react'
+import { Button, useTranslate } from 'react-admin'
+import { ButtonGroup, Typography, makeStyles } from '@material-ui/core'
 import ViewHeadlineIcon from '@material-ui/icons/ViewHeadline'
 import ViewModuleIcon from '@material-ui/icons/ViewModule'
 import { useDispatch, useSelector } from 'react-redux'
 import { albumViewGrid, albumViewTable } from '../actions'
-import { ToggleFieldsMenu } from '../common'
 
 const useStyles = makeStyles({
   title: { margin: '1rem' },
@@ -24,8 +13,8 @@ const useStyles = makeStyles({
   rightButton: { paddingLeft: '0.5rem' },
 })
 
-const AlbumViewToggler = React.forwardRef(
-  ({ showTitle = true, disableElevation, fullWidth }, ref) => {
+export const AlbumViewToggler = React.forwardRef(
+  ({ showTitle = true }, ref) => {
     const dispatch = useDispatch()
     const albumView = useSelector((state) => state.albumView)
     const classes = useStyles()
@@ -69,52 +58,5 @@ const AlbumViewToggler = React.forwardRef(
 
 AlbumViewToggler.displayName = 'AlbumViewToggler'
 
-const AlbumListActions = ({
-  currentSort,
-  className,
-  resource,
-  filters,
-  displayedFilters,
-  filterValues,
-  permanentFilter,
-  exporter,
-  basePath,
-  selectedIds,
-  onUnselectItems,
-  showFilter,
-  maxResults,
-  total,
-  fullWidth,
-  ...rest
-}) => {
-  const isNotSmall = useMediaQuery((theme) => theme.breakpoints.up('sm'))
-  const albumView = useSelector((state) => state.albumView)
-  return (
-    <TopToolbar className={className} {...sanitizeListRestProps(rest)}>
-      {filters &&
-        cloneElement(filters, {
-          resource,
-          showFilter,
-          displayedFilters,
-          filterValues,
-          context: 'button',
-        })}
-      {isNotSmall ? (
-        <ToggleFieldsMenu
-          resource="album"
-          topbarComponent={AlbumViewToggler}
-          hideColumns={albumView.grid}
-        />
-      ) : (
-        <AlbumViewToggler showTitle={false} />
-      )}
-    </TopToolbar>
-  )
-}
+export default AlbumViewToggler
 
-AlbumListActions.defaultProps = {
-  selectedIds: [],
-  onUnselectItems: () => null,
-}
-
-export default AlbumListActions

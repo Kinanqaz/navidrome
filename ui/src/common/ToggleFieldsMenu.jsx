@@ -10,21 +10,67 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useTranslate } from 'react-admin'
 import { setToggleableFields } from '../actions'
 
-const useStyles = makeStyles({
-  menuIcon: {
-    position: 'relative',
-    top: '-0.5em',
-  },
-  menu: {
-    width: '24ch',
-  },
-  columns: {
-    maxHeight: '21rem',
-    overflow: 'auto',
-  },
-  title: {
-    margin: '1rem',
-  },
+const useStyles = makeStyles((theme) => {
+  const isDark = theme.palette.type === 'dark'
+  const controlBackground = isDark
+    ? 'rgba(255, 255, 255, 0.08)'
+    : 'rgba(0, 0, 0, 0.05)'
+  const controlHoverBackground = isDark
+    ? 'rgba(255, 255, 255, 0.16)'
+    : 'rgba(0, 0, 0, 0.09)'
+  const controlBorder = isDark
+    ? 'rgba(255, 255, 255, 0.14)'
+    : 'rgba(0, 0, 0, 0.16)'
+  const controlHoverBorder = isDark
+    ? 'rgba(255, 255, 255, 0.28)'
+    : 'rgba(0, 0, 0, 0.28)'
+
+  return {
+    menuIcon: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '36px',
+      margin: 0,
+      padding: 0,
+    },
+    iconButton: {
+      width: '36px !important',
+      height: '36px !important',
+      boxSizing: 'border-box !important',
+      margin: '0 !important',
+      padding: '0 !important',
+      display: 'inline-flex !important',
+      alignItems: 'center !important',
+      justifyContent: 'center !important',
+      borderRadius: '18px !important',
+      backgroundColor: `${controlBackground} !important`,
+      color: `${theme.palette.text.primary} !important`,
+      border: `1px solid ${controlBorder} !important`,
+      backdropFilter: 'blur(10px)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important',
+      '&:hover': {
+        backgroundColor: `${controlHoverBackground} !important`,
+        borderColor: `${controlHoverBorder} !important`,
+        transform: 'translateY(-1px)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25) !important',
+      },
+      '& svg': {
+        fontSize: '1.25rem',
+        display: 'block',
+      },
+    },
+    menu: {
+      width: '24ch',
+    },
+    columns: {
+      maxHeight: '21rem',
+      overflow: 'auto',
+    },
+    title: {
+      margin: '1rem',
+    },
+  }
 })
 
 export const ToggleFieldsMenu = ({
@@ -69,6 +115,7 @@ export const ToggleFieldsMenu = ({
         aria-controls="long-menu"
         aria-haspopup="true"
         onClick={handleOpen}
+        className={classes.iconButton}
       >
         <MoreVertIcon />
       </IconButton>
@@ -92,8 +139,10 @@ export const ToggleFieldsMenu = ({
               {Object.entries(toggleableColumns).map(([key, val]) =>
                 !omittedColumns.includes(key) ? (
                   <MenuItem key={key} onClick={() => handleClick(key)}>
-                    <Checkbox checked={val} />
-                    {translate(`resources.${resource}.fields.${key}`)}
+                    <Checkbox checked={Boolean(val)} />
+                    {translate(`resources.${resource}.fields.${key}`, {
+                      _: key === 'starred' ? 'Favourite' : key,
+                    })}
                   </MenuItem>
                 ) : null,
               )}

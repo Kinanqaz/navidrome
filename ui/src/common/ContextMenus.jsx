@@ -10,8 +10,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import { useDataProvider, useNotify, useTranslate } from 'react-admin'
 import clsx from 'clsx'
 import {
-  playNext,
-  addTracks,
   playTracks,
   shuffleTracks,
   openAddToPlaylist,
@@ -80,18 +78,6 @@ const ContextMenu = ({
       needData: true,
       label: translate('resources.album.actions.playAll'),
       action: (data, ids) => dispatch(playTracks(data, ids)),
-    },
-    playNext: {
-      enabled: true,
-      needData: true,
-      label: translate('resources.album.actions.playNext'),
-      action: (data, ids) => dispatch(playNext(data, ids)),
-    },
-    addToQueue: {
-      enabled: true,
-      needData: true,
-      label: translate('resources.album.actions.addToQueue'),
-      action: (data, ids) => dispatch(addTracks(data, ids)),
     },
     shuffle: {
       enabled: true,

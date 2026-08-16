@@ -15,9 +15,6 @@ import MoreVertIcon from '@material-ui/icons/MoreVert'
 import { MdQuestionMark } from 'react-icons/md'
 import clsx from 'clsx'
 import {
-  playNext,
-  addTracks,
-  setTrack,
   openAddToPlaylist,
   openExtendedInfoDialog,
   openDownloadMenu,
@@ -39,19 +36,34 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const MoreButton = ({ record, onClick, info }) => {
-  const handleClick = record.missing
+const MoreButton = ({
+  record,
+  onClick,
+  info,
+  className,
+  size = 'small',
+  disabled,
+  ...rest
+}) => {
+  const handleClick = record?.missing
     ? (e) => {
         info.action(record)
         e.stopPropagation()
       }
     : onClick
   return (
-    <IconButton onClick={handleClick} size={'small'}>
+    <IconButton
+      onClick={handleClick}
+      size={size}
+      className={className}
+      disabled={disabled}
+      aria-label="more"
+      {...rest}
+    >
       {record?.missing ? (
         <MdQuestionMark fontSize={'large'} />
       ) : (
-        <MoreVertIcon fontSize={'small'} />
+        <MoreVertIcon fontSize={size === 'small' ? 'small' : undefined} />
       )}
     </IconButton>
   )
@@ -63,6 +75,10 @@ export const SongContextMenu = ({
   showLove,
   onAddToPlaylist,
   className,
+  buttonClassName,
+  buttonSize = 'small',
+  disabled,
+  'data-testid': testId,
 }) => {
   const classes = useStyles()
   const dispatch = useDispatch()
@@ -80,21 +96,6 @@ export const SongContextMenu = ({
   const refresh = useRefresh()
 
   const options = {
-    playNow: {
-      enabled: true,
-      label: translate('resources.song.actions.playNow'),
-      action: (record) => dispatch(setTrack(record)),
-    },
-    playNext: {
-      enabled: true,
-      label: translate('resources.song.actions.playNext'),
-      action: (record) => dispatch(playNext({ [record.id]: record })),
-    },
-    addToQueue: {
-      enabled: true,
-      label: translate('resources.song.actions.addToQueue'),
-      action: (record) => dispatch(addTracks({ [record.id]: record })),
-    },
     instantMix: {
       enabled: config.enableExternalServices,
       label: translate('resources.song.actions.instantMix'),
@@ -279,7 +280,15 @@ export const SongContextMenu = ({
         resource={resource}
         visible={config.enableFavourites && showLove && present}
       />
-      <MoreButton record={record} onClick={handleClick} info={options.info} />
+      <MoreButton
+        record={record}
+        onClick={handleClick}
+        info={options.info}
+        className={buttonClassName}
+        size={buttonSize}
+        disabled={disabled}
+        data-testid={testId}
+      />
       <Menu
         id={'menu' + record.id}
         anchorEl={anchorEl}
@@ -350,6 +359,9 @@ SongContextMenu.propTypes = {
   record: PropTypes.object.isRequired,
   onAddToPlaylist: PropTypes.func,
   showLove: PropTypes.bool,
+  buttonClassName: PropTypes.string,
+  buttonSize: PropTypes.string,
+  disabled: PropTypes.bool,
 }
 
 SongContextMenu.defaultProps = {
@@ -358,4 +370,5 @@ SongContextMenu.defaultProps = {
   resource: 'song',
   showLove: true,
   addLabel: true,
+  buttonSize: 'small',
 }

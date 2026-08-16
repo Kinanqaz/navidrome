@@ -5,6 +5,7 @@ import {
   AutocompleteArrayInput,
   AutocompleteInput,
   Filter,
+  FilterButton,
   NullableBooleanInput,
   NumberInput,
   ReferenceArrayInput,
@@ -12,35 +13,37 @@ import {
   SearchInput,
   useListContext,
   usePermissions,
-  useRefresh,
   useTranslate,
   useVersion,
 } from 'react-admin'
 import FavoriteIcon from '@material-ui/icons/Favorite'
-import { withWidth } from '@material-ui/core'
+import { useMediaQuery, withWidth } from '@material-ui/core'
 import {
   List,
   Pagination,
   Title,
+  ToggleFieldsMenu,
   useAlbumsPerPage,
   useResourceRefresh,
   useScrollRestoration,
   useSetToggleableFields,
 } from '../common'
-import AlbumListActions from './AlbumListActions'
+import { AlbumViewToggler } from './AlbumListActions'
 import AlbumTableView from './AlbumTableView'
 import AlbumGridView from './AlbumGridView'
 import { useRollChanged } from './useRollChanged'
 import albumLists from './albumLists'
-import {
-  getStoredDefaultView,
-  isResourceDefaultView,
-} from '../personal/defaultViews'
+import { isResourceDefaultView } from '../personal/defaultViews'
+import { resolveAlbumListType } from './albumListRouting'
 import config from '../config'
 import AlbumInfo from './AlbumInfo'
 import ExpandInfoDialog from '../dialogs/ExpandInfoDialog'
 import { humanize } from 'inflection'
 import { makeStyles } from '@material-ui/core/styles'
+import {
+  songFilterStyles,
+  getAutocompleteArrayClasses,
+} from '../song/SongList'
 
 // Waits for rows: restoring into an unrendered list leaves the page too short to hold the offset.
 const ScrollRestorer = ({ children, ...rest }) => {
@@ -49,12 +52,7 @@ const ScrollRestorer = ({ children, ...rest }) => {
   return cloneElement(children, rest)
 }
 
-const useStyles = makeStyles({
-  chip: {
-    margin: 0,
-    height: '24px',
-  },
-})
+const useStyles = makeStyles(songFilterStyles)
 
 const formatReleaseType = (record) =>
   record?.tagValue ? humanize(record?.tagValue) : '-- None --'
@@ -64,114 +62,178 @@ const AlbumFilter = (props) => {
   const translate = useTranslate()
   const { permissions } = usePermissions()
   const isAdmin = permissions === 'admin'
+  const isNotSmall = useMediaQuery((theme) => theme.breakpoints.up('sm'))
+  const albumView = useSelector((state) => state.albumView)
+  const {
+    resource = 'album',
+    displayedFilters,
+    filterValues,
+    showFilter,
+  } = useListContext(props)
+
+  if (props.context === 'button') {
+    return null
+  }
+
+  const filterElements = [
+    <SearchInput
+      id="search"
+      key="name"
+      source="name"
+      alwaysOn
+      className={classes.searchInput}
+    />,
+    <ReferenceInput
+      key="artist_id"
+      label={translate('resources.album.fields.artist')}
+      source="artist_id"
+      reference="artist"
+      sort={{ field: 'name', order: 'ASC' }}
+      filterToQuery={(searchText) => ({ name: [searchText] })}
+    >
+      <AutocompleteInput emptyText="-- None --" />
+    </ReferenceInput>,
+    <ReferenceArrayInput
+      key="genre_id"
+      label={translate('resources.album.fields.genre')}
+      source="genre_id"
+      reference="genre"
+      perPage={0}
+      sort={{ field: 'name', order: 'ASC' }}
+      filterToQuery={(searchText) => ({ name: [searchText] })}
+    >
+      <AutocompleteArrayInput
+        emptyText="-- None --"
+        classes={getAutocompleteArrayClasses(classes)}
+      />
+    </ReferenceArrayInput>,
+    <ReferenceInput
+      key="recordlabel"
+      label={translate('resources.album.fields.recordLabel')}
+      source="recordlabel"
+      reference="tag"
+      perPage={0}
+      sort={{ field: 'tagValue', order: 'ASC' }}
+      filter={{ tag_name: 'recordlabel' }}
+      filterToQuery={(searchText) => ({
+        tag_value: [searchText],
+      })}
+    >
+      <AutocompleteInput emptyText="-- None --" optionText="tagValue" />
+    </ReferenceInput>,
+    <ReferenceArrayInput
+      key="grouping"
+      label={translate('resources.album.fields.grouping')}
+      source="grouping"
+      reference="tag"
+      perPage={0}
+      sort={{ field: 'tagValue', order: 'ASC' }}
+      filter={{ tag_name: 'grouping' }}
+      filterToQuery={(searchText) => ({
+        tag_value: [searchText],
+      })}
+    >
+      <AutocompleteArrayInput
+        emptyText="-- None --"
+        classes={getAutocompleteArrayClasses(classes)}
+        optionText="tagValue"
+      />
+    </ReferenceArrayInput>,
+    <ReferenceArrayInput
+      key="mood"
+      label={translate('resources.album.fields.mood')}
+      source="mood"
+      reference="tag"
+      perPage={0}
+      sort={{ field: 'tagValue', order: 'ASC' }}
+      filter={{ tag_name: 'mood' }}
+      filterToQuery={(searchText) => ({
+        tag_value: [searchText],
+      })}
+    >
+      <AutocompleteArrayInput
+        emptyText="-- None --"
+        classes={getAutocompleteArrayClasses(classes)}
+        optionText="tagValue"
+      />
+    </ReferenceArrayInput>,
+    <ReferenceInput
+      key="media"
+      label={translate('resources.album.fields.media')}
+      source="media"
+      reference="tag"
+      perPage={0}
+      sort={{ field: 'tagValue', order: 'ASC' }}
+      filter={{ tag_name: 'media' }}
+      filterToQuery={(searchText) => ({
+        tag_value: [searchText],
+      })}
+    >
+      <AutocompleteInput emptyText="-- None --" optionText="tagValue" />
+    </ReferenceInput>,
+    <ReferenceInput
+      key="releasetype"
+      label={translate('resources.album.fields.releaseType')}
+      source="releasetype"
+      reference="tag"
+      perPage={0}
+      sort={{ field: 'tagValue', order: 'ASC' }}
+      filter={{ tag_name: 'releasetype' }}
+      filterToQuery={(searchText) => ({
+        tag_value: [searchText],
+      })}
+    >
+      <AutocompleteInput
+        emptyText="-- None --"
+        optionText={formatReleaseType}
+      />
+    </ReferenceInput>,
+    <NullableBooleanInput key="compilation" source="compilation" />,
+    <NumberInput key="year" source="year" />,
+    ...(config.enableFavourites
+      ? [
+          <NullableBooleanInput
+            key="starred"
+            source="starred"
+            label={<FavoriteIcon fontSize={'small'} />}
+          />,
+        ]
+      : []),
+    ...(isAdmin
+      ? [<NullableBooleanInput key="missing" source="missing" />]
+      : []),
+  ]
+
   return (
-    <Filter {...props} variant={'outlined'}>
-      <SearchInput id="search" source="name" alwaysOn />
-      <ReferenceInput
-        label={translate('resources.album.fields.artist')}
-        source="artist_id"
-        reference="artist"
-        sort={{ field: 'name', order: 'ASC' }}
-        filterToQuery={(searchText) => ({ name: [searchText] })}
-      >
-        <AutocompleteInput emptyText="-- None --" />
-      </ReferenceInput>
-      <ReferenceArrayInput
-        label={translate('resources.album.fields.genre')}
-        source="genre_id"
-        reference="genre"
-        perPage={0}
-        sort={{ field: 'name', order: 'ASC' }}
-        filterToQuery={(searchText) => ({ name: [searchText] })}
-      >
-        <AutocompleteArrayInput emptyText="-- None --" classes={classes} />
-      </ReferenceArrayInput>
-      <ReferenceInput
-        label={translate('resources.album.fields.recordLabel')}
-        source="recordlabel"
-        reference="tag"
-        perPage={0}
-        sort={{ field: 'tagValue', order: 'ASC' }}
-        filter={{ tag_name: 'recordlabel' }}
-        filterToQuery={(searchText) => ({
-          tag_value: [searchText],
-        })}
-      >
-        <AutocompleteInput emptyText="-- None --" optionText="tagValue" />
-      </ReferenceInput>
-      <ReferenceArrayInput
-        label={translate('resources.album.fields.grouping')}
-        source="grouping"
-        reference="tag"
-        perPage={0}
-        sort={{ field: 'tagValue', order: 'ASC' }}
-        filter={{ tag_name: 'grouping' }}
-        filterToQuery={(searchText) => ({
-          tag_value: [searchText],
-        })}
-      >
-        <AutocompleteArrayInput
-          emptyText="-- None --"
-          classes={classes}
-          optionText="tagValue"
+    <div className={classes.toolbarRoot}>
+      <div className={classes.leftGroup}>
+        <Filter
+          {...props}
+          variant="outlined"
+          classes={{ form: classes.filterForm }}
+        >
+          {filterElements}
+        </Filter>
+      </div>
+      <div className={classes.rightGroup}>
+        <FilterButton
+          resource={resource}
+          filters={filterElements}
+          displayedFilters={displayedFilters}
+          filterValues={filterValues}
+          showFilter={showFilter}
         />
-      </ReferenceArrayInput>
-      <ReferenceArrayInput
-        label={translate('resources.album.fields.mood')}
-        source="mood"
-        reference="tag"
-        perPage={0}
-        sort={{ field: 'tagValue', order: 'ASC' }}
-        filter={{ tag_name: 'mood' }}
-        filterToQuery={(searchText) => ({
-          tag_value: [searchText],
-        })}
-      >
-        <AutocompleteArrayInput
-          emptyText="-- None --"
-          classes={classes}
-          optionText="tagValue"
-        />
-      </ReferenceArrayInput>
-      <ReferenceInput
-        label={translate('resources.album.fields.media')}
-        source="media"
-        reference="tag"
-        perPage={0}
-        sort={{ field: 'tagValue', order: 'ASC' }}
-        filter={{ tag_name: 'media' }}
-        filterToQuery={(searchText) => ({
-          tag_value: [searchText],
-        })}
-      >
-        <AutocompleteInput emptyText="-- None --" optionText="tagValue" />
-      </ReferenceInput>
-      <ReferenceInput
-        label={translate('resources.album.fields.releaseType')}
-        source="releasetype"
-        reference="tag"
-        perPage={0}
-        sort={{ field: 'tagValue', order: 'ASC' }}
-        filter={{ tag_name: 'releasetype' }}
-        filterToQuery={(searchText) => ({
-          tag_value: [searchText],
-        })}
-      >
-        <AutocompleteInput
-          emptyText="-- None --"
-          optionText={formatReleaseType}
-        />
-      </ReferenceInput>
-      <NullableBooleanInput source="compilation" />
-      <NumberInput source="year" />
-      {config.enableFavourites && (
-        <NullableBooleanInput
-          source="starred"
-          label={<FavoriteIcon fontSize={'small'} />}
-        />
-      )}
-      {isAdmin && <NullableBooleanInput source="missing" />}
-    </Filter>
+        {isNotSmall ? (
+          <ToggleFieldsMenu
+            resource="album"
+            topbarComponent={AlbumViewToggler}
+            hideColumns={albumView.grid}
+          />
+        ) : (
+          <AlbumViewToggler showTitle={false} />
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -205,7 +267,6 @@ const AlbumList = (props) => {
   const [perPage, perPageOptions] = useAlbumsPerPage(width)
   const location = useLocation()
   const version = useVersion()
-  const refresh = useRefresh()
   useResourceRefresh('album')
 
   const seed = `${randomStartingSeed}-${version}`
@@ -233,17 +294,12 @@ const AlbumList = (props) => {
     ['createdAt', 'size'],
   )
 
-  // If it does not have filter/sort params (usually coming from Menu),
-  // reload with correct filter/sort params
   if (!location.search) {
-    const type = albumListType || getStoredDefaultView()
-    if (isResourceDefaultView(type)) {
+    const type = resolveAlbumListType(albumListType)
+    if (isResourceDefaultView(type) && type !== 'album') {
       return <Redirect to={`/${type}`} />
     }
     const listParams = albumLists[type]
-    if (type === 'random') {
-      refresh()
-    }
     if (listParams) {
       return <Redirect to={`/album/${type}?${listParams.params}`} />
     }
@@ -256,7 +312,7 @@ const AlbumList = (props) => {
         exporter={false}
         bulkActionButtons={false}
         filter={{ seed }}
-        actions={<AlbumListActions />}
+        actions={false}
         filters={<AlbumFilter />}
         perPage={perPage}
         pagination={

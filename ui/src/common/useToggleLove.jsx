@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDataProvider, useNotify } from 'react-admin'
 import subsonic from '../subsonic'
 
-export const useToggleLove = (resource, record = {}) => {
+export const useToggleLove = (resource, rawRecord = {}) => {
+  const record = rawRecord || {}
   const [loading, setLoading] = useState(false)
   const notify = useNotify()
 
@@ -41,9 +42,16 @@ export const useToggleLove = (resource, record = {}) => {
           setLoading(false)
         }
       })
-  }, [dataProvider, record.mediaFileId, record.id, record.playlistId, resource])
+  }, [
+    dataProvider,
+    record?.mediaFileId,
+    record?.id,
+    record?.playlistId,
+    resource,
+  ])
 
   const toggleLove = () => {
+    if (!record.id) return
     const toggle = record.starred ? subsonic.unstar : subsonic.star
     const id = record.mediaFileId || record.id
 

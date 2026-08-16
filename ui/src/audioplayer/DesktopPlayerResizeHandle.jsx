@@ -47,9 +47,15 @@ const DesktopPlayerResizeHandle = ({ visible }) => {
   useEffect(() => () => stopResizeRef.current?.(), [])
 
   const resizeToPointer = useCallback((clientX) => {
-    setWidth(
-      clampDesktopPlayerWidth(window.innerWidth - clientX, window.innerWidth),
+    const nextWidth = clampDesktopPlayerWidth(
+      window.innerWidth - clientX,
+      window.innerWidth,
     )
+    document.documentElement.style.setProperty(
+      desktopPlayerWidthProperty,
+      `${nextWidth}px`,
+    )
+    setWidth(nextWidth)
   }, [])
 
   const handlePointerDown = useCallback(

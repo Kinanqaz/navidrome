@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react'
 import {
+  CreateButton,
   Datagrid,
   DateField,
   EditButton,
   Filter,
+  FilterButton,
   NullableBooleanInput,
   NumberField,
   ReferenceInput,
@@ -15,6 +17,8 @@ import {
   useRecordContext,
   BulkDeleteButton,
   usePermissions,
+  useListContext,
+  useTranslate,
 } from 'react-admin'
 import Switch from '@material-ui/core/Switch'
 import { makeStyles } from '@material-ui/core/styles'
@@ -24,6 +28,7 @@ import {
   DurationField,
   List,
   LoveButton,
+  ToggleFieldsMenu,
   Writable,
   isWritable,
   useSelectedFields,
@@ -31,39 +36,90 @@ import {
 } from '../common'
 import FavoriteIcon from '@material-ui/icons/Favorite'
 import config from '../config'
-import PlaylistListActions from './PlaylistListActions'
 import ChangePublicStatusButton from './ChangePublicStatusButton'
+import { songFilterStyles } from '../song/SongList'
 
 const useStyles = makeStyles((theme) => ({
+  ...songFilterStyles(theme),
   button: {
     color: theme.palette.type === 'dark' ? 'white' : undefined,
   },
 }))
 
 const PlaylistFilter = (props) => {
+  const classes = useStyles()
+  const translate = useTranslate()
   const { permissions } = usePermissions()
+  const isNotSmall = useMediaQuery((theme) => theme.breakpoints.up('sm'))
+  const {
+    resource = 'playlist',
+    displayedFilters,
+    filterValues,
+    showFilter,
+  } = useListContext(props)
+
+  if (props.context === 'button') {
+    return null
+  }
+
+  const filterElements = [
+    <SearchInput
+      key="q"
+      source="q"
+      alwaysOn
+      className={classes.searchInput}
+    />,
+    ...(permissions === 'admin'
+      ? [
+          <ReferenceInput
+            key="owner_id"
+            source="owner_id"
+            label={'resources.playlist.fields.ownerName'}
+            reference="user"
+            perPage={0}
+            sort={{ field: 'name', order: 'ASC' }}
+            alwaysOn
+          >
+            <SelectInput optionText="name" />
+          </ReferenceInput>,
+        ]
+      : []),
+    ...(config.enableFavourites
+      ? [
+          <NullableBooleanInput
+            key="starred"
+            source="starred"
+            label={<FavoriteIcon fontSize={'small'} />}
+          />,
+        ]
+      : []),
+  ]
+
   return (
-    <Filter {...props} variant={'outlined'}>
-      <SearchInput source="q" alwaysOn />
-      {permissions === 'admin' && (
-        <ReferenceInput
-          source="owner_id"
-          label={'resources.playlist.fields.ownerName'}
-          reference="user"
-          perPage={0}
-          sort={{ field: 'name', order: 'ASC' }}
-          alwaysOn
+    <div className={classes.toolbarRoot}>
+      <div className={classes.leftGroup}>
+        <Filter
+          {...props}
+          variant="outlined"
+          classes={{ form: classes.filterForm }}
         >
-          <SelectInput optionText="name" />
-        </ReferenceInput>
-      )}
-      {config.enableFavourites && (
-        <NullableBooleanInput
-          source="starred"
-          label={<FavoriteIcon fontSize={'small'} />}
+          {filterElements}
+        </Filter>
+      </div>
+      <div className={classes.rightGroup}>
+        <FilterButton
+          resource={resource}
+          filters={filterElements}
+          displayedFilters={displayedFilters}
+          filterValues={filterValues}
+          showFilter={showFilter}
         />
-      )}
-    </Filter>
+        <CreateButton basePath="/playlist">
+          {translate('ra.action.create')}
+        </CreateButton>
+        {isNotSmall && <ToggleFieldsMenu resource="playlist" />}
+      </div>
+    </div>
   )
 }
 
@@ -193,7 +249,7 @@ const PlaylistList = (props) => {
       exporter={false}
       sort={{ field: 'name', order: 'ASC' }}
       filters={<PlaylistFilter />}
-      actions={<PlaylistListActions />}
+      actions={false}
       bulkActionButtons={!isXsmall && <PlaylistListBulkActions />}
     >
       <Datagrid rowClick="show" isRowSelectable={(r) => isWritable(r?.ownerId)}>

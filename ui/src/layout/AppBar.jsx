@@ -20,6 +20,36 @@ import config from '../config'
 
 const useStyles = makeStyles(
   (theme) => ({
+    appBar: {
+      paddingTop: 'env(safe-area-inset-top)',
+      '& .MuiToolbar-root': {
+        paddingRight: `${theme.spacing(1)}px !important`,
+        paddingLeft: `${theme.spacing(0.5)}px !important`,
+        minHeight: '48px !important',
+        '& #react-admin-title': {
+          minWidth: 0,
+          flex: '1 1 auto',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          fontSize: '1.05rem',
+          fontWeight: 600,
+        },
+      },
+      '& .RaLoadingIndicator-loadedIcon, & [class*="RaLoadingIndicator"], & .RaLoadingIndicator-loader':
+        {
+          flexShrink: '0 !important',
+          display: 'inline-flex !important',
+          visibility: 'visible !important',
+          color: 'inherit',
+        },
+      '& .RaUserMenu-user, & [class*="UserMenu"], & [class*="RaUserMenu"]': {
+        flexShrink: '0 !important',
+        display: 'inline-flex !important',
+        visibility: 'visible !important',
+        color: 'inherit',
+      },
+    },
     root: {
       color: theme.palette.text.secondary,
     },
@@ -139,8 +169,16 @@ const CustomUserMenu = ({ onClick, ...rest }) => {
   )
 }
 
-const AppBar = (props) => (
-  <RAAppBar {...props} container={Fragment} userMenu={<CustomUserMenu />} />
-)
+const AppBar = (props) => {
+  const classes = useStyles()
+  return (
+    <RAAppBar
+      {...props}
+      className={classes.appBar}
+      container={Fragment}
+      userMenu={<CustomUserMenu />}
+    />
+  )
+}
 
 export default AppBar

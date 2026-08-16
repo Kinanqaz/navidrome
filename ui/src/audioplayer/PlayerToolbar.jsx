@@ -1,12 +1,10 @@
 import React, { useCallback } from 'react'
-import { useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useGetOne } from 'react-admin'
 import { GlobalHotKeys } from 'react-hotkeys'
-import IconButton from '@material-ui/core/IconButton'
 import { useMediaQuery } from '@material-ui/core'
-import { RiSaveLine } from 'react-icons/ri'
-import { LoveButton, useToggleLove } from '../common'
-import { openSaveQueueDialog } from '../actions'
+import clsx from 'clsx'
+import { LoveButton, SongContextMenu, useToggleLove } from '../common'
 import { keyMap } from '../hotkeys'
 import { makeStyles } from '@material-ui/core/styles'
 
@@ -14,8 +12,7 @@ const useStyles = makeStyles((theme) => ({
   toolbar: {
     display: 'flex',
     alignItems: 'center',
-    flexGrow: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     gap: '0.5rem',
     listStyle: 'none',
     padding: 0,
@@ -31,12 +28,74 @@ const useStyles = makeStyles((theme) => ({
     height: 24,
   },
   button: {
-    width: '2.5rem',
-    height: '2.5rem',
+    width: 38,
+    height: 38,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 0,
+    borderRadius: '50%',
+    color: theme.palette.text.secondary,
+    transition: theme.transitions.create(
+      ['background-color', 'color', 'transform'],
+      {
+        duration: theme.transitions.duration.shortest,
+      },
+    ),
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+      color: theme.palette.text.primary,
+      transform: 'scale(1.08)',
+    },
+    '&:active': {
+      transform: 'scale(0.94)',
+    },
+  },
+  cornerButton: {
+    width: 38,
+    height: 38,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 0,
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    color: '#ffffff',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    transition: theme.transitions.create(
+      ['background-color', 'color', 'transform'],
+      {
+        duration: theme.transitions.duration.shortest,
+      },
+    ),
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.28)',
+      color: '#ffffff',
+      transform: 'scale(1.08)',
+    },
+    '&:active': {
+      transform: 'scale(0.92)',
+    },
+    '& svg': {
+      fontSize: 22,
+      color: 'inherit',
+    },
+  },
+  cornerMenu: {
+    position: 'fixed',
+    top: 'max(18px, env(safe-area-inset-top))',
+    right: 'max(16px, env(safe-area-inset-right))',
+    zIndex: 1001,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    [theme.breakpoints.up('md')]: {
+      position: 'absolute',
+      top: theme.spacing(2),
+      left: theme.spacing(2),
+      right: 'auto',
+    },
   },
   mobileButton: {
     width: 24,
@@ -47,18 +106,22 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '18px',
-  },
-  mobileIcon: {
-    fontSize: '18px',
-    display: 'flex',
-    alignItems: 'center',
+    color: theme.palette.text.secondary,
+    '& svg': {
+      fontSize: '18px',
+    },
   },
 }))
 
 const PlayerToolbar = ({ id, isRadio }) => {
-  const dispatch = useDispatch()
+  const currentSong = useSelector(
+    (state) =>
+      state.player?.current?.song ||
+      state.player?.queue?.[state.player?.playIndex]?.song,
+  )
   const { data, loading } = useGetOne('song', id, { enabled: !!id && !isRadio })
-  const [toggleLove, toggling] = useToggleLove('song', data)
+  const songRecord = id ? data || currentSong || { id } : null
+  const [toggleLove, toggling] = useToggleLove('song', songRecord || {})
   const isDesktop = useMediaQuery('(min-width:810px)')
   const classes = useStyles()
 
@@ -66,32 +129,12 @@ const PlayerToolbar = ({ id, isRadio }) => {
     TOGGLE_LOVE: useCallback(() => toggleLove(), [toggleLove]),
   }
 
-  const handleSaveQueue = useCallback(
-    (e) => {
-      dispatch(openSaveQueueDialog())
-      e.stopPropagation()
-    },
-    [dispatch],
-  )
-
   const buttonClass = isDesktop ? classes.button : classes.mobileButton
   const listItemClass = isDesktop ? classes.toolbar : classes.mobileListItem
 
-  const saveQueueButton = (
-    <IconButton
-      size={isDesktop ? 'small' : undefined}
-      onClick={handleSaveQueue}
-      disabled={isRadio}
-      data-testid="save-queue-button"
-      className={buttonClass}
-    >
-      <RiSaveLine className={!isDesktop ? classes.mobileIcon : undefined} />
-    </IconButton>
-  )
-
   const loveButton = (
     <LoveButton
-      record={data}
+      record={songRecord}
       resource={'song'}
       size={isDesktop ? undefined : 'inherit'}
       disabled={loading || toggling || !id || isRadio}
@@ -99,20 +142,24 @@ const PlayerToolbar = ({ id, isRadio }) => {
     />
   )
 
+  const contextMenu = songRecord && !isRadio ? (
+    <SongContextMenu
+      record={songRecord}
+      resource={'song'}
+      showLove={false}
+      className={clsx(classes.cornerMenu, 'player-corner-menu')}
+      buttonClassName={classes.cornerButton}
+      buttonSize="medium"
+      disabled={loading || !id}
+      data-testid="player-context-menu"
+    />
+  ) : null
+
   return (
     <>
       <GlobalHotKeys keyMap={keyMap} handlers={handlers} allowChanges />
-      {isDesktop ? (
-        <li className={`${listItemClass} item`}>
-          {saveQueueButton}
-          {loveButton}
-        </li>
-      ) : (
-        <>
-          <li className={`${listItemClass} item`}>{saveQueueButton}</li>
-          <li className={`${listItemClass} item`}>{loveButton}</li>
-        </>
-      )}
+      {contextMenu}
+      <li className={`${listItemClass} item`}>{loveButton}</li>
     </>
   )
 }

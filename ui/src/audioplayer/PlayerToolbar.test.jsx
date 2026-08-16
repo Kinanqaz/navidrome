@@ -1,10 +1,9 @@
 import React from 'react'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, cleanup } from '@testing-library/react'
 import { useMediaQuery } from '@material-ui/core'
 import { useGetOne } from 'react-admin'
-import { useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useToggleLove } from '../common'
-import { openSaveQueueDialog } from '../actions'
 import PlayerToolbar from './PlayerToolbar'
 
 // Mock dependencies
@@ -21,6 +20,7 @@ vi.mock('react-admin', () => ({
 }))
 
 vi.mock('react-redux', () => ({
+  useSelector: vi.fn(),
   useDispatch: vi.fn(),
 }))
 
@@ -30,11 +30,18 @@ vi.mock('../common', () => ({
       Love
     </button>
   ),
+  SongContextMenu: ({ className, buttonClassName, disabled }) => (
+    <div data-testid="player-context-menu" className={className}>
+      <button
+        data-testid="more-button"
+        className={buttonClassName}
+        disabled={disabled}
+      >
+        More
+      </button>
+    </div>
+  ),
   useToggleLove: vi.fn(),
-}))
-
-vi.mock('../actions', () => ({
-  openSaveQueueDialog: vi.fn(),
 }))
 
 vi.mock('react-hotkeys', () => ({
@@ -43,15 +50,13 @@ vi.mock('react-hotkeys', () => ({
 
 describe('<PlayerToolbar />', () => {
   const mockToggleLove = vi.fn()
-  const mockDispatch = vi.fn()
   const mockSongData = { id: 'song-1', name: 'Test Song', starred: false }
 
   beforeEach(() => {
     vi.clearAllMocks()
+    useSelector.mockReturnValue(null)
     useGetOne.mockReturnValue({ data: mockSongData, loading: false })
     useToggleLove.mockReturnValue([mockToggleLove, false])
-    useDispatch.mockReturnValue(mockDispatch)
-    openSaveQueueDialog.mockReturnValue({ type: 'OPEN_SAVE_QUEUE_DIALOG' })
   })
 
   afterEach(cleanup)
@@ -61,46 +66,39 @@ describe('<PlayerToolbar />', () => {
       useMediaQuery.mockReturnValue(true) // isDesktop = true
     })
 
-    it('renders desktop toolbar with both buttons', () => {
+    it('renders desktop layout with upper corner context menu and toolbar love button', () => {
       render(<PlayerToolbar id="song-1" />)
 
-      // Both buttons should be in a single list item
+      // Context menu should be rendered with corner menu class
+      const contextMenu = screen.getByTestId('player-context-menu')
+      expect(contextMenu).toBeInTheDocument()
+      expect(contextMenu.className).toContain('cornerMenu')
+
+      // Love button should be in the toolbar list item
       const listItems = screen.getAllByRole('listitem')
       expect(listItems).toHaveLength(1)
-
-      // Verify both buttons are rendered
-      expect(screen.getByTestId('save-queue-button')).toBeInTheDocument()
       expect(screen.getByTestId('love-button')).toBeInTheDocument()
-
-      // Verify desktop classes are applied
       expect(listItems[0].className).toContain('toolbar')
+
+      // Save queue button should not be present
+      expect(screen.queryByTestId('save-queue-button')).not.toBeInTheDocument()
     })
 
-    it('disables save queue button when isRadio is true', () => {
+    it('hides context menu when isRadio is true', () => {
       render(<PlayerToolbar id="song-1" isRadio={true} />)
 
-      const saveQueueButton = screen.getByTestId('save-queue-button')
-      expect(saveQueueButton).toBeDisabled()
+      expect(
+        screen.queryByTestId('player-context-menu'),
+      ).not.toBeInTheDocument()
     })
 
-    it('disables love button when conditions are met', () => {
+    it('disables love button when loading is true', () => {
       useGetOne.mockReturnValue({ data: mockSongData, loading: true })
 
       render(<PlayerToolbar id="song-1" />)
 
       const loveButton = screen.getByTestId('love-button')
       expect(loveButton).toBeDisabled()
-    })
-
-    it('opens save queue dialog when save button is clicked', () => {
-      render(<PlayerToolbar id="song-1" />)
-
-      const saveQueueButton = screen.getByTestId('save-queue-button')
-      fireEvent.click(saveQueueButton)
-
-      expect(mockDispatch).toHaveBeenCalledWith({
-        type: 'OPEN_SAVE_QUEUE_DIALOG',
-      })
     })
   })
 
@@ -109,27 +107,29 @@ describe('<PlayerToolbar />', () => {
       useMediaQuery.mockReturnValue(false) // isDesktop = false
     })
 
-    it('renders mobile toolbar with buttons in separate list items', () => {
+    it('renders mobile layout with upper corner context menu and toolbar love button', () => {
       render(<PlayerToolbar id="song-1" />)
 
-      // Each button should be in its own list item
       const listItems = screen.getAllByRole('listitem')
-      expect(listItems).toHaveLength(2)
+      expect(listItems).toHaveLength(1)
 
-      // Verify both buttons are rendered
-      expect(screen.getByTestId('save-queue-button')).toBeInTheDocument()
       expect(screen.getByTestId('love-button')).toBeInTheDocument()
+      const contextMenu = screen.getByTestId('player-context-menu')
+      expect(contextMenu).toBeInTheDocument()
+      expect(contextMenu.className).toContain('cornerMenu')
+      expect(screen.queryByTestId('save-queue-button')).not.toBeInTheDocument()
 
-      // Verify mobile classes are applied
       expect(listItems[0].className).toContain('mobileListItem')
-      expect(listItems[1].className).toContain('mobileListItem')
     })
 
-    it('disables save queue button when isRadio is true', () => {
+    it('hides context menu on mobile when isRadio is true', () => {
       render(<PlayerToolbar id="song-1" isRadio={true} />)
 
-      const saveQueueButton = screen.getByTestId('save-queue-button')
-      expect(saveQueueButton).toBeDisabled()
+      expect(
+        screen.queryByTestId('player-context-menu'),
+      ).not.toBeInTheDocument()
+      const listItems = screen.getAllByRole('listitem')
+      expect(listItems).toHaveLength(1)
     })
 
     it('disables love button when conditions are met', () => {
@@ -161,6 +161,9 @@ describe('<PlayerToolbar />', () => {
 
       const loveButton = screen.getByTestId('love-button')
       expect(loveButton).toBeDisabled()
+      expect(
+        screen.queryByTestId('player-context-menu'),
+      ).not.toBeInTheDocument()
     })
   })
 })

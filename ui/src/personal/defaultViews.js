@@ -1,6 +1,12 @@
 import albumLists from '../album/albumLists'
 
-export const resourceDefaultViews = ['artist', 'song', 'playlist', 'radio']
+export const resourceDefaultViews = [
+  'artist',
+  'song',
+  'album',
+  'playlist',
+  'radio',
+]
 
 export const isResourceDefaultView = (defaultView) =>
   resourceDefaultViews.includes(defaultView)

@@ -5,11 +5,13 @@ import {
   DatagridBody,
   DatagridRow,
   Filter,
+  FilterButton,
   FunctionField,
   NumberField,
   SearchInput,
   SelectInput,
   TextField,
+  useListContext,
   useTranslate,
   NullableBooleanInput,
   usePermissions,
@@ -24,19 +26,21 @@ import {
   ArtistContextMenu,
   ArtworkAvatar,
   List,
+  ToggleFieldsMenu,
   useGetHandleArtistClick,
   RatingField,
   useSelectedFields,
   useResourceRefresh,
 } from '../common'
 import config from '../config'
-import ArtistListActions from './ArtistListActions'
 import ArtistSimpleList from './ArtistSimpleList'
 import { DraggableTypes } from '../consts'
 import en from '../i18n/en.json'
 import { formatBytes } from '../utils/index.js'
+import { songFilterStyles } from '../song/SongList'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
+  ...songFilterStyles(theme),
   contextHeader: {
     marginLeft: '3px',
     marginTop: '-2px',
@@ -65,12 +69,25 @@ const useStyles = makeStyles({
   ratingField: {
     visibility: 'hidden',
   },
-})
+}))
 
 const ArtistFilter = (props) => {
+  const classes = useStyles()
   const translate = useTranslate()
   const { permissions } = usePermissions()
   const isAdmin = permissions === 'admin'
+  const isNotSmall = useMediaQuery((theme) => theme.breakpoints.up('sm'))
+  const {
+    resource = 'artist',
+    displayedFilters,
+    filterValues,
+    showFilter,
+  } = useListContext(props)
+
+  if (props.context === 'button') {
+    return null
+  }
+
   const rolesObj = en?.resources?.artist?.roles
   const roles = Object.keys(rolesObj).reduce((acc, role) => {
     acc.push({
@@ -82,18 +99,57 @@ const ArtistFilter = (props) => {
     return acc
   }, [])
   roles?.sort((a, b) => a.name.localeCompare(b.name))
+
+  const filterElements = [
+    <SearchInput
+      id="search"
+      key="name"
+      source="name"
+      alwaysOn
+      className={classes.searchInput}
+    />,
+    <SelectInput
+      key="role"
+      source="role"
+      choices={roles}
+      alwaysOn
+    />,
+    ...(config.enableFavourites
+      ? [
+          <NullableBooleanInput
+            key="starred"
+            source="starred"
+            label={<FavoriteIcon fontSize={'small'} />}
+          />,
+        ]
+      : []),
+    ...(isAdmin
+      ? [<NullableBooleanInput key="missing" source="missing" />]
+      : []),
+  ]
+
   return (
-    <Filter {...props} variant={'outlined'}>
-      <SearchInput id="search" source="name" alwaysOn />
-      <SelectInput source="role" choices={roles} alwaysOn />
-      {config.enableFavourites && (
-        <NullableBooleanInput
-          source="starred"
-          label={<FavoriteIcon fontSize={'small'} />}
+    <div className={classes.toolbarRoot}>
+      <div className={classes.leftGroup}>
+        <Filter
+          {...props}
+          variant="outlined"
+          classes={{ form: classes.filterForm }}
+        >
+          {filterElements}
+        </Filter>
+      </div>
+      <div className={classes.rightGroup}>
+        <FilterButton
+          resource={resource}
+          filters={filterElements}
+          displayedFilters={displayedFilters}
+          filterValues={filterValues}
+          showFilter={showFilter}
         />
-      )}
-      {isAdmin && <NullableBooleanInput source="missing" />}
-    </Filter>
+        {isNotSmall && <ToggleFieldsMenu resource="artist" />}
+      </div>
+    </div>
   )
 }
 
@@ -215,7 +271,7 @@ const ArtistList = (props) => {
         bulkActionButtons={false}
         filters={<ArtistFilter />}
         filterDefaultValues={{ role: 'albumartist' }}
-        actions={<ArtistListActions />}
+        actions={false}
       >
         <ArtistListView {...props} />
       </List>

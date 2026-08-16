@@ -55,4 +55,12 @@ describe('<AudioTitle />', () => {
     const link = screen.getByRole('link')
     expect(link.getAttribute('href')).toBe('/album/album-1/show')
   })
+
+  it('renders song title and artist without showing album name', () => {
+    const audioInfo = { trackId: 'track-1', song: baseSong }
+    render(<AudioTitle audioInfo={audioInfo} gainInfo={{}} isMobile={false} />)
+    expect(screen.getByText('Test Song')).toBeInTheDocument()
+    expect(screen.getByText('Artist')).toBeInTheDocument()
+    expect(screen.queryByText('Album')).not.toBeInTheDocument()
+  })
 })
