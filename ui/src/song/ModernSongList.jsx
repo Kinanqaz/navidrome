@@ -460,7 +460,10 @@ const renderColumnCell = (song, colId, classes) => {
       )
     case 'duration':
       return (
-        <Typography className={classes.secondary} variant="caption">
+        <Typography
+          className={`${classes.secondary} ${classes.desktopOnly}`}
+          variant="caption"
+        >
           <DurationField record={song} source="duration" />
         </Typography>
       )
@@ -667,7 +670,10 @@ export const ModernTrackRows = ({
                 />
               )}
             </div>
-            <Typography className={classes.secondary} variant="caption">
+            <Typography
+              className={`${classes.secondary} ${classes.desktopOnly}`}
+              variant="caption"
+            >
               <DurationField record={song} source="duration" />
             </Typography>
           </>

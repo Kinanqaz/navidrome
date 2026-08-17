@@ -298,6 +298,8 @@ export const SongContextMenu = ({
         anchorEl={anchorEl}
         open={open}
         onClose={handleMainMenuClose}
+        getContentAnchorEl={null}
+        style={{ zIndex: 1500 }}
       >
         {Object.keys(options).map((key) => {
           const showInPlaylistDisabled =
@@ -339,6 +341,8 @@ export const SongContextMenu = ({
         anchorEl={playlistAnchorEl}
         open={Boolean(playlistAnchorEl)}
         onClose={handlePlaylistClose}
+        getContentAnchorEl={null}
+        style={{ zIndex: 1500 }}
         anchorOrigin={{
           vertical: 'top',
           horizontal: 'right',

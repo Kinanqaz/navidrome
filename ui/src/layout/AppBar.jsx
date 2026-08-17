@@ -8,7 +8,14 @@ import {
 } from 'react-admin'
 import { MdInfo, MdPerson, MdSupervisorAccount } from 'react-icons/md'
 import { useSelector } from 'react-redux'
-import { makeStyles, MenuItem, ListItemIcon, Divider } from '@material-ui/core'
+import {
+  makeStyles,
+  MenuItem,
+  ListItemIcon,
+  Divider,
+  useMediaQuery,
+} from '@material-ui/core'
+import { alpha } from '@material-ui/core/styles'
 import ViewListIcon from '@material-ui/icons/ViewList'
 import { Dialogs } from '../dialogs/Dialogs'
 import { AboutDialog } from '../dialogs'
@@ -22,7 +29,13 @@ const useStyles = makeStyles(
   (theme) => ({
     appBar: {
       paddingTop: 'env(safe-area-inset-top)',
+      backgroundColor: `${theme.palette.background.default} !important`,
+      color: `${theme.palette.text.primary} !important`,
+      boxShadow: 'none !important',
+      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.12)} !important`,
       '& .MuiToolbar-root': {
+        backgroundColor: `${theme.palette.background.default} !important`,
+        color: `${theme.palette.text.primary} !important`,
         paddingRight: `${theme.spacing(1)}px !important`,
         paddingLeft: `${theme.spacing(1)}px !important`,
         minHeight: '48px !important',
@@ -51,6 +64,12 @@ const useStyles = makeStyles(
         display: 'inline-flex !important',
         visibility: 'visible !important',
         color: 'inherit',
+      },
+      [theme.breakpoints.down('sm')]: {
+        '& .RaLoadingIndicator-root, & .RaLoadingIndicator-loader, & .RaLoadingIndicator-loadedIcon, & [class*="RaLoadingIndicator"]':
+          {
+            display: 'none !important',
+          },
       },
     },
     root: {
@@ -105,6 +124,7 @@ const CustomUserMenu = ({ onClick, ...rest }) => {
   const resources = useSelector(getResources)
   const classes = useStyles(rest)
   const { permissions } = usePermissions()
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'))
 
   const resourceDefinition = (resourceName) =>
     resources.find((r) => r?.name === resourceName)
@@ -153,7 +173,8 @@ const CustomUserMenu = ({ onClick, ...rest }) => {
 
   return (
     <>
-      {config.devActivityPanel &&
+      {!isMobile &&
+        config.devActivityPanel &&
         permissions === 'admin' &&
         config.enableNowPlaying && <NowPlayingPanel />}
       {config.devActivityPanel && permissions === 'admin' && <ActivityPanel />}

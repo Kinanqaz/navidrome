@@ -256,7 +256,16 @@ export const Player = () => {
   )
 
   const options = useMemo(() => {
-    const current = playerState.current || {}
+    const activeItem =
+      (playerState.current?.uuid && playerState.current) ||
+      playerState.queue[
+        playerState.playIndex ?? playerState.savedPlayIndex ?? 0
+      ] ||
+      {}
+    const currentTrackId =
+      activeItem.trackId || activeItem.song?.id || activeItem.id
+    const isRadio = activeItem.isRadio || activeItem.song?.isRadio || false
+
     return {
       ...defaultOptions,
       mode: isPhone && !mobileExpanded ? 'mini' : 'full',
@@ -268,10 +277,10 @@ export const Player = () => {
         (playerState.clear || playerState.playIndex === 0),
       clearPriorAudioLists: playerState.clear,
       extendsContent: (
-        <PlayerToolbar id={current.trackId} isRadio={current.isRadio} />
+        <PlayerToolbar id={currentTrackId} isRadio={isRadio} />
       ),
       defaultVolume: isMobilePlayer ? 1 : playerState.volume,
-      showMediaSession: !current.isRadio,
+      showMediaSession: !isRadio,
     }
   }, [
     playerState,

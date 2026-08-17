@@ -156,7 +156,7 @@ describe('<PlayerToolbar />', () => {
       expect(screen.getByTestId('global-hotkeys')).toBeInTheDocument()
     })
 
-    it('disables buttons when id is not provided', () => {
+    it('disables buttons when id is not provided and no queue song exists', () => {
       render(<PlayerToolbar />)
 
       const loveButton = screen.getByTestId('love-button')
@@ -164,6 +164,25 @@ describe('<PlayerToolbar />', () => {
       expect(
         screen.queryByTestId('player-context-menu'),
       ).not.toBeInTheDocument()
+    })
+
+    it('renders context menu when id is not provided as prop but song is present in player queue', () => {
+      useSelector.mockImplementation((selector) =>
+        selector({
+          player: {
+            queue: [{ song: { id: 'song-queue-1', title: 'Queue Song' } }],
+            playIndex: 0,
+          },
+        }),
+      )
+      useGetOne.mockReturnValue({
+        data: { id: 'song-queue-1', title: 'Queue Song' },
+        loading: false,
+      })
+
+      render(<PlayerToolbar />)
+
+      expect(screen.getByTestId('player-context-menu')).toBeInTheDocument()
     })
   })
 })

@@ -65,8 +65,41 @@ const useCurrentTheme = () => {
 
     return {
       ...theme,
+      zIndex: {
+        mobileStepper: 1000,
+        speedDial: 1050,
+        appBar: 1100,
+        drawer: 1200,
+        modal: 1500,
+        snackbar: 1600,
+        tooltip: 1700,
+        ...theme.zIndex,
+      },
       overrides: {
         ...theme.overrides,
+        MuiAppBar: {
+          ...theme.overrides?.MuiAppBar,
+          root: {
+            backgroundColor: `${theme.palette?.background?.default || '#1d1d1d'} !important`,
+            boxShadow: 'none !important',
+            ...theme.overrides?.MuiAppBar?.root,
+          },
+          colorSecondary: {
+            ...theme.overrides?.MuiAppBar?.colorSecondary,
+            backgroundColor: `${theme.palette?.background?.default || '#1d1d1d'} !important`,
+            color: `${theme.palette?.text?.primary || '#fff'} !important`,
+          },
+          colorPrimary: {
+            ...theme.overrides?.MuiAppBar?.colorPrimary,
+            backgroundColor: `${theme.palette?.background?.default || '#1d1d1d'} !important`,
+            color: `${theme.palette?.text?.primary || '#fff'} !important`,
+          },
+          positionFixed: {
+            ...theme.overrides?.MuiAppBar?.positionFixed,
+            backgroundColor: `${theme.palette?.background?.default || '#1d1d1d'} !important`,
+            boxShadow: 'none !important',
+          },
+        },
         MuiDrawer: {
           ...restDrawerOverrides,
           root: {

@@ -3,11 +3,20 @@ import { render, screen } from '@testing-library/react'
 import { describe, it, beforeEach, vi } from 'vitest'
 import { Provider } from 'react-redux'
 import { createStore, combineReducers } from 'redux'
+import { useMediaQuery } from '@material-ui/core'
 import { activityReducer } from '../reducers'
 import AppBar from './AppBar'
 import config from '../config'
 
 let store
+
+vi.mock('@material-ui/core', async () => {
+  const actual = await import('@material-ui/core')
+  return {
+    ...actual,
+    useMediaQuery: vi.fn(() => false),
+  }
+})
 
 vi.mock('react-admin', () => ({
   AppBar: ({ userMenu }) => <div data-testid="appbar">{userMenu}</div>,
@@ -37,6 +46,8 @@ vi.mock('../dialogs', () => ({
 
 describe('<AppBar />', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
+    useMediaQuery.mockReturnValue(false)
     config.devActivityPanel = true
     config.enableNowPlaying = true
     store = createStore(combineReducers({ activity: activityReducer }), {
@@ -44,13 +55,23 @@ describe('<AppBar />', () => {
     })
   })
 
-  it('renders NowPlayingPanel when enabled', () => {
+  it('renders NowPlayingPanel when enabled on desktop', () => {
     render(
       <Provider store={store}>
         <AppBar />
       </Provider>,
     )
     expect(screen.getByTestId('now-playing-panel')).toBeInTheDocument()
+  })
+
+  it('hides NowPlayingPanel on mobile screens', () => {
+    useMediaQuery.mockReturnValue(true) // isMobile = true
+    render(
+      <Provider store={store}>
+        <AppBar />
+      </Provider>,
+    )
+    expect(screen.queryByTestId('now-playing-panel')).toBeNull()
   })
 
   it('hides NowPlayingPanel when disabled', () => {

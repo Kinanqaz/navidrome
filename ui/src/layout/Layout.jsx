@@ -1,11 +1,16 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Layout as RALayout, toggleSidebar } from 'react-admin'
 import { makeStyles } from '@material-ui/core/styles'
+import {
+  ThemeProvider as MuiThemeProvider,
+  createMuiTheme,
+} from '@material-ui/core/styles'
 import { HotKeys } from 'react-hotkeys'
 import Menu from './Menu'
 import AppBar from './AppBar'
 import Notification from './Notification'
+import MobileBottomNav from './MobileBottomNav'
 import useCurrentTheme from '../themes/useCurrentTheme'
 import { useSearchRefocus } from '../common'
 import { desktopPlayerWidth } from '../audioplayer/styles'
@@ -17,7 +22,9 @@ const useStyles = makeStyles((theme) => ({
     overflowX: 'hidden',
     boxSizing: 'border-box',
     paddingBottom: (props) =>
-      props.addPadding ? 'calc(96px + env(safe-area-inset-bottom))' : 0,
+      props.addPadding
+        ? 'calc(170px + env(safe-area-inset-bottom))'
+        : 'calc(70px + env(safe-area-inset-bottom))',
     '& .MuiDrawer-root.MuiDrawer-modal, & .MuiDrawer-modal, & .RaSidebar-root .MuiDrawer-modal':
       {
         background: 'transparent !important',
@@ -49,8 +56,8 @@ const useStyles = makeStyles((theme) => ({
         paddingTop: theme.spacing(1),
         paddingBottom: (props) =>
           props.addPadding
-            ? 'calc(100px + env(safe-area-inset-bottom))'
-            : theme.spacing(3),
+            ? 'calc(174px + env(safe-area-inset-bottom))'
+            : 'calc(74px + env(safe-area-inset-bottom))',
       },
       '& thead.MuiTableHead-root, & .RaDatagrid-thead, & .RaDatagrid-headerRow': {
         [theme.breakpoints.down('xs')]: {
@@ -158,13 +165,15 @@ const useStyles = makeStyles((theme) => ({
           props.addPadding
             ? `calc(${desktopPlayerWidth} + ${theme.spacing(3.5)}px)`
             : theme.spacing(3.5),
+        paddingBottom: theme.spacing(4),
       },
     },
   },
 }))
 
 const Layout = (props) => {
-  const theme = useCurrentTheme()
+  const themeConfig = useCurrentTheme()
+  const muiTheme = useMemo(() => createMuiTheme(themeConfig), [themeConfig])
   const queue = useSelector((state) => state.player?.queue)
   const classes = useStyles({ addPadding: queue.length > 0 })
   const dispatch = useDispatch()
@@ -181,11 +190,15 @@ const Layout = (props) => {
         className={classes.root}
         menu={Menu}
         appBar={AppBar}
-        theme={theme}
+        theme={themeConfig}
         notification={Notification}
       />
+      <MuiThemeProvider theme={muiTheme}>
+        <MobileBottomNav />
+      </MuiThemeProvider>
     </HotKeys>
   )
 }
 
 export default Layout
+

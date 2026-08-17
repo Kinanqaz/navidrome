@@ -60,10 +60,8 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     padding: 0,
     borderRadius: '50%',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'transparent',
     color: '#ffffff',
-    backdropFilter: 'blur(12px)',
-    WebkitBackdropFilter: 'blur(12px)',
     transition: theme.transitions.create(
       ['background-color', 'color', 'transform'],
       {
@@ -71,7 +69,7 @@ const useStyles = makeStyles((theme) => ({
       },
     ),
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.28)',
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
       color: '#ffffff',
       transform: 'scale(1.08)',
     },
@@ -87,7 +85,7 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     top: 'max(18px, env(safe-area-inset-top))',
     right: 'max(16px, env(safe-area-inset-right))',
-    zIndex: 1001,
+    zIndex: 1402,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -96,6 +94,7 @@ const useStyles = makeStyles((theme) => ({
       top: theme.spacing(2),
       left: theme.spacing(2),
       right: 'auto',
+      zIndex: 10,
     },
   },
   mobileButton: {
@@ -118,10 +117,21 @@ const PlayerToolbar = ({ id, isRadio }) => {
   const currentSong = useSelector(
     (state) =>
       state.player?.current?.song ||
-      state.player?.queue?.[state.player?.playIndex]?.song,
+      state.player?.queue?.[state.player?.playIndex]?.song ||
+      state.player?.queue?.[state.player?.savedPlayIndex]?.song ||
+      state.player?.queue?.[0]?.song,
   )
-  const { data, loading } = useGetOne('song', id, { enabled: !!id && !isRadio })
-  const songRecord = id ? data || currentSong || { id } : null
+  const effectiveId =
+    id ||
+    currentSong?.id ||
+    currentSong?.mediaFileId ||
+    currentSong?.trackId
+  const { data, loading } = useGetOne('song', effectiveId, {
+    enabled: !!effectiveId && !isRadio,
+  })
+  const songRecord = effectiveId
+    ? data || currentSong || { id: effectiveId }
+    : null
   const [toggleLove, toggling] = useToggleLove('song', songRecord || {})
   const isDesktop = useMediaQuery('(min-width:810px)')
   const classes = useStyles()
@@ -138,7 +148,7 @@ const PlayerToolbar = ({ id, isRadio }) => {
       record={songRecord}
       resource={'song'}
       size={isDesktop ? undefined : 'inherit'}
-      disabled={loading || toggling || !id || isRadio}
+      disabled={loading || toggling || !effectiveId || isRadio}
       className={buttonClass}
     />
   )
@@ -151,7 +161,7 @@ const PlayerToolbar = ({ id, isRadio }) => {
       className={clsx(classes.cornerMenu, 'player-corner-menu')}
       buttonClassName={classes.cornerButton}
       buttonSize="medium"
-      disabled={loading || !id}
+      disabled={loading || !effectiveId}
       data-testid="player-context-menu"
     />
   ) : null

@@ -10,11 +10,24 @@ import {
   useListContext,
   usePermissions,
   useTranslate,
+  useGetList,
 } from 'react-admin'
-import { IconButton, useMediaQuery } from '@material-ui/core'
+import {
+  Chip,
+  IconButton,
+  Popover,
+  List as MuiList,
+  ListItem,
+  ListItemText,
+  TextField as MuiTextField,
+  InputAdornment,
+  useMediaQuery,
+} from '@material-ui/core'
 import FavoriteIcon from '@material-ui/icons/Favorite'
 import SearchIcon from '@material-ui/icons/Search'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
+import AddIcon from '@material-ui/icons/Add'
+import CloseIcon from '@material-ui/icons/Close'
 import { makeStyles } from '@material-ui/core/styles'
 import { useLocation, Redirect } from 'react-router-dom'
 import {
@@ -271,139 +284,124 @@ export const songFilterStyles = (theme) => {
         color: subtleText,
       },
     },
-    middleFilters: {
+    // Clean chip-based filter area
+    activeFiltersArea: {
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
       flex: '1 1 auto',
       minWidth: 0,
+      gap: theme.spacing(0.5),
       overflowX: 'auto',
       scrollbarWidth: 'none',
       '&::-webkit-scrollbar': {
         display: 'none',
       },
-      '& .RaFilter-root, & [class*="RaFilter-root"]': {
-        margin: '0 !important',
-        padding: '0 !important',
+    },
+    filterChip: {
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: `${controlBackground} !important`,
+      border: `1px solid ${controlBorder}`,
+      color: `${theme.palette.text.primary} !important`,
+      fontSize: '0.78rem',
+      fontWeight: 500,
+      flexShrink: 0,
+      transition: 'all 0.18s ease',
+      '&:hover': {
+        backgroundColor: `${controlHoverBackground} !important`,
+        borderColor: controlHoverBorder,
       },
-      '& form': {
-        display: 'flex !important',
-        flexDirection: 'row !important',
-        alignItems: 'center !important',
-        flexWrap: 'nowrap !important',
-        gap: `${theme.spacing(0.75)}px !important`,
-        margin: '0 !important',
-        padding: '0 !important',
-        minHeight: 'auto !important',
-      },
-      '& .filter-field': {
-        display: 'inline-flex !important',
-        flexDirection: 'row-reverse !important',
-        alignItems: 'center !important',
-        backgroundColor: `${controlBackground} !important`,
-        border: `1px solid ${controlBorder} !important`,
-        borderRadius: '18px !important',
-        height: '36px !important',
-        padding: '0 4px 0 10px !important',
-        boxSizing: 'border-box !important',
-        margin: '0 !important',
-        flexShrink: 0,
-        minWidth: 90,
-        maxWidth: 150,
-      },
-      '& .filter-field > div:last-child:not(:first-child)': {
-        display: 'none !important',
-      },
-      '& form > div:last-child:not(.filter-field)': {
-        display: 'none !important',
-      },
-      '& .RaFilterForm-clearfix, & [class*="clearfix"]': {
-        display: 'none !important',
-      },
-      '& .hide-filter': {
-        padding: '2px !important',
-        margin: '0 0 0 2px !important',
+      '& .MuiChip-deleteIcon': {
         color: subtleText,
-        transition: 'all 0.2s ease',
+        fontSize: '0.95rem',
+        marginRight: 2,
         '&:hover': {
           color: theme.palette.text.primary,
-          backgroundColor: controlHoverBackground,
-        },
-        '& svg': {
-          fontSize: '1.1rem',
         },
       },
-      '& .filter-field .MuiFormControl-root': {
-        margin: '0 !important',
-        position: 'relative !important',
-        flex: '1 1 auto !important',
-        minWidth: 0,
-        width: '100% !important',
-        display: 'flex !important',
-        justifyContent: 'center !important',
+    },
+    addFilterButton: {
+      width: 30,
+      height: 30,
+      minWidth: 30,
+      borderRadius: 15,
+      backgroundColor: `${controlBackground} !important`,
+      border: `1px solid ${controlBorder} !important`,
+      color: `${subtleText} !important`,
+      padding: 0,
+      flex: '0 0 30px',
+      transition: 'all 0.18s ease',
+      '&:hover': {
+        backgroundColor: `${controlHoverBackground} !important`,
+        borderColor: `${controlHoverBorder} !important`,
+        color: `${theme.palette.text.primary} !important`,
+        transform: 'scale(1.06)',
       },
-      '& .filter-field .MuiOutlinedInput-root': {
-        height: '34px !important',
-        border: 'none !important',
-        backgroundColor: 'transparent !important',
-        padding: '0 !important',
-        alignItems: 'center !important',
-        flexWrap: 'nowrap !important',
-        overflow: 'hidden !important',
+      '& svg': {
+        fontSize: '1.1rem',
+      },
+    },
+    filterPopover: {
+      '& .MuiPaper-root': {
+        borderRadius: 12,
+        backgroundColor: isDark ? '#1e1e26' : '#ffffff',
+        border: `1px solid ${controlBorder}`,
+        boxShadow: isDark
+          ? '0 12px 40px rgba(0, 0, 0, 0.5)'
+          : '0 8px 30px rgba(0, 0, 0, 0.12)',
+        minWidth: 200,
+        maxWidth: 280,
+        maxHeight: 340,
+        overflow: 'hidden',
+      },
+    },
+    filterPopoverSearch: {
+      padding: theme.spacing(1, 1.5),
+      borderBottom: `1px solid ${controlBorder}`,
+      '& .MuiOutlinedInput-root': {
+        height: 34,
+        borderRadius: 17,
+        backgroundColor: `${controlBackground} !important`,
+        border: `1px solid ${controlBorder}`,
+        fontSize: '0.82rem',
         '& fieldset': {
           border: 'none !important',
         },
       },
-      '& .filter-field .MuiInputLabel-outlined': {
-        position: 'absolute !important',
-        left: '2px !important',
-        top: '50% !important',
-        transform: 'translateY(-50%) !important',
-        fontSize: '0.82rem !important',
-        color: `${subtleText} !important`,
-        pointerEvents: 'none',
-        fontWeight: 500,
-        whiteSpace: 'nowrap !important',
-        overflow: 'hidden !important',
-        textOverflow: 'ellipsis !important',
-        maxWidth: 'calc(100% - 24px) !important',
-        zIndex: 1,
-        lineHeight: 1,
-      },
-      '& .filter-field:focus-within .MuiInputLabel-outlined, & .filter-field .MuiChip-root ~ .MuiInputLabel-outlined': {
-        display: 'none !important',
-      },
-      '& .filter-field .MuiAutocomplete-root': {
-        minWidth: 0,
-        width: '100% !important',
-        '& .MuiIconButton-root': {
-          padding: '2px !important',
-          color: subtleText,
-          '& svg': {
-            fontSize: '1rem',
-          },
-        },
-      },
-      '& .filter-field .MuiChip-root': {
-        height: '22px !important',
-        borderRadius: '11px !important',
-        backgroundColor: `${controlHoverBackground} !important`,
-        color: `${theme.palette.text.primary} !important`,
-        fontSize: '0.75rem !important',
-        fontWeight: 500,
-        margin: '1px !important',
-        '& .MuiChip-deleteIcon': {
-          color: subtleText,
-          fontSize: '0.9rem',
-          marginRight: 2,
-        },
-      },
-      '& .filter-field .MuiInputBase-input': {
+      '& .MuiInputBase-input': {
+        padding: '6px 8px !important',
         fontSize: '0.82rem',
-        padding: '0 4px !important',
-        height: '32px',
-        color: theme.palette.text.primary,
       },
+    },
+    filterPopoverList: {
+      maxHeight: 260,
+      overflowY: 'auto',
+      padding: theme.spacing(0.5),
+      scrollbarWidth: 'thin',
+    },
+    filterPopoverItem: {
+      borderRadius: 8,
+      padding: theme.spacing(0.75, 1.5),
+      fontSize: '0.82rem',
+      color: theme.palette.text.primary,
+      transition: 'background 0.15s ease',
+      '&:hover': {
+        backgroundColor: controlHoverBackground,
+      },
+    },
+    filterPopoverItemSelected: {
+      backgroundColor: `${controlHoverBackground} !important`,
+      fontWeight: 600,
+    },
+    // Hidden filter form — keeps React-Admin filter state in sync
+    hiddenFilterForm: {
+      position: 'absolute !important',
+      width: '0 !important',
+      height: '0 !important',
+      overflow: 'hidden !important',
+      opacity: '0 !important',
+      pointerEvents: 'none !important',
     },
     chip: {
       margin: '0 2px',
@@ -540,6 +538,104 @@ export const getAutocompleteArrayClasses = (classes) => ({
   inputInput: classes.autocompleteInput,
 })
 
+// Genre picker popover component
+const GenrePickerPopover = ({
+  anchorEl,
+  open,
+  onClose,
+  filterValues,
+  setFilters,
+  displayedFilters,
+  classes,
+}) => {
+  const translate = useTranslate()
+  const [search, setSearch] = React.useState('')
+  const { ids: genreIds, data: genres } = useGetList(
+    'genre',
+    { page: 1, perPage: 500 },
+    { field: 'name', order: 'ASC' },
+  )
+
+  const genreList = (genreIds || []).map((id) => genres?.[id]).filter(Boolean)
+  const selectedIds = filterValues?.genre_id || []
+
+  const filtered = genreList.filter((g) =>
+    g.name.toLowerCase().includes(search.toLowerCase()),
+  )
+
+  const toggleGenre = (genreId) => {
+    const current = [...selectedIds]
+    const idx = current.indexOf(genreId)
+    if (idx >= 0) {
+      current.splice(idx, 1)
+    } else {
+      current.push(genreId)
+    }
+    const newFilters = { ...filterValues }
+    if (current.length > 0) {
+      newFilters.genre_id = current
+    } else {
+      delete newFilters.genre_id
+    }
+    setFilters(newFilters, displayedFilters)
+  }
+
+  return (
+    <Popover
+      open={open}
+      anchorEl={anchorEl}
+      onClose={() => {
+        onClose()
+        setSearch('')
+      }}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+      className={classes.filterPopover}
+    >
+      <div className={classes.filterPopoverSearch}>
+        <MuiTextField
+          variant="outlined"
+          size="small"
+          fullWidth
+          placeholder={translate('ra.action.search')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          autoFocus
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon style={{ fontSize: '1rem', opacity: 0.5 }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </div>
+      <div className={classes.filterPopoverList}>
+        <MuiList dense disablePadding>
+          {filtered.map((genre) => {
+            const isSelected = selectedIds.includes(genre.id)
+            return (
+              <ListItem
+                key={genre.id}
+                button
+                onClick={() => toggleGenre(genre.id)}
+                className={clsx(classes.filterPopoverItem, {
+                  [classes.filterPopoverItemSelected]: isSelected,
+                })}
+              >
+                <ListItemText
+                  primary={genre.name}
+                  primaryTypographyProps={{ style: { fontSize: '0.82rem' } }}
+                />
+              </ListItem>
+            )
+          })}
+        </MuiList>
+      </div>
+    </Popover>
+  )
+}
+
 const SongFilter = (props) => {
   const classes = useStyles()
   const translate = useTranslate()
@@ -556,6 +652,16 @@ const SongFilter = (props) => {
 
   const hasSearch = Boolean(filterValues?.title)
   const [searchExpanded, setSearchExpanded] = React.useState(hasSearch)
+  const [pickerAnchor, setPickerAnchor] = React.useState(null)
+
+  // Get genre names for active chips
+  const activeGenreIds = filterValues?.genre_id || []
+  const { data: allGenres } = useGetList(
+    'genre',
+    { page: 1, perPage: 500 },
+    { field: 'name', order: 'ASC' },
+  )
+  const genreMap = allGenres || {}
 
   React.useEffect(() => {
     if (hasSearch) {
@@ -578,6 +684,36 @@ const SongFilter = (props) => {
     />
   )
 
+  const removeGenre = (genreId) => {
+    const current = (filterValues?.genre_id || []).filter(
+      (id) => id !== genreId,
+    )
+    const newFilters = { ...filterValues }
+    if (current.length > 0) {
+      newFilters.genre_id = current
+    } else {
+      delete newFilters.genre_id
+    }
+    setFilters(newFilters, displayedFilters)
+  }
+
+  // Build active genre chips
+  const genreChips = activeGenreIds.map((genreId) => {
+    const genre = genreMap[genreId]
+    const label = genre ? genre.name : genreId
+    return (
+      <Chip
+        key={genreId}
+        label={label}
+        size="small"
+        className={classes.filterChip}
+        onDelete={() => removeGenre(genreId)}
+        deleteIcon={<CloseIcon />}
+      />
+    )
+  })
+
+  // Secondary filter elements (hidden, for React-Admin filter state compatibility)
   const secondaryFilterElements = [
     <ReferenceArrayInput
       key="genre_id"
@@ -696,7 +832,21 @@ const SongFilter = (props) => {
         </IconButton>
       )}
 
-      <div className={classes.middleFilters}>
+      {/* Clean chips + add button instead of autocomplete field */}
+      <div className={classes.activeFiltersArea}>
+        {genreChips}
+        <IconButton
+          size="small"
+          className={classes.addFilterButton}
+          aria-label="Add category filter"
+          onClick={(e) => setPickerAnchor(e.currentTarget)}
+        >
+          <AddIcon />
+        </IconButton>
+      </div>
+
+      {/* Hidden filter form to keep React-Admin filter state in sync */}
+      <div className={classes.hiddenFilterForm}>
         <Filter
           {...props}
           variant="outlined"
@@ -705,6 +855,16 @@ const SongFilter = (props) => {
           {secondaryFilterElements}
         </Filter>
       </div>
+
+      <GenrePickerPopover
+        anchorEl={pickerAnchor}
+        open={Boolean(pickerAnchor)}
+        onClose={() => setPickerAnchor(null)}
+        filterValues={filterValues}
+        setFilters={setFilters}
+        displayedFilters={displayedFilters}
+        classes={classes}
+      />
 
       <div className={classes.rightGroup}>
         <ShuffleAllButton filters={filterValues} />
@@ -802,4 +962,5 @@ const SongList = (props) => {
   )
 }
 
+export { SongFilter }
 export default SongList
