@@ -54,6 +54,8 @@ const MoreButton = ({
   return (
     <IconButton
       onClick={handleClick}
+      onMouseDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
       size={size}
       className={className}
       disabled={disabled}
@@ -288,6 +290,8 @@ export const SongContextMenu = ({
         size={buttonSize}
         disabled={disabled}
         data-testid={testId}
+        aria-expanded={open}
+        aria-haspopup="true"
       />
       <Menu
         id={'menu' + record.id}

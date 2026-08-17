@@ -7,6 +7,7 @@ import clsx from 'clsx'
 import { LoveButton, SongContextMenu, useToggleLove } from '../common'
 import { keyMap } from '../hotkeys'
 import { makeStyles } from '@material-ui/core/styles'
+import MobileVolumeControl from './MobileVolumeControl'
 
 const useStyles = makeStyles((theme) => ({
   toolbar: {
@@ -159,6 +160,7 @@ const PlayerToolbar = ({ id, isRadio }) => {
     <>
       <GlobalHotKeys keyMap={keyMap} handlers={handlers} allowChanges />
       {contextMenu}
+      {!isDesktop && <MobileVolumeControl />}
       <li className={`${listItemClass} item`}>{loveButton}</li>
     </>
   )

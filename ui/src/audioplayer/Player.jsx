@@ -37,7 +37,7 @@ import { detectBrowserProfile, decisionService } from '../transcode'
 import DesktopPlayerResizeHandle from './DesktopPlayerResizeHandle'
 import MobilePlayerBar from './MobilePlayerBar'
 
-const Player = () => {
+export const Player = () => {
   const theme = useCurrentTheme()
   const translate = useTranslate()
   const playerTheme = theme.player?.theme || 'dark'
@@ -480,16 +480,27 @@ const Player = () => {
     }
   }, [audioInstance])
 
+  const expandTimeRef = useRef(0)
+
+  const openMobilePlayer = useCallback(() => {
+    expandTimeRef.current = Date.now()
+    setMobileExpanded(true)
+  }, [])
+
   const dismissMobilePlayer = useCallback(() => {
+    if (Date.now() - expandTimeRef.current < 400) return
     const el = document.querySelector('.react-jinke-music-player-mobile')
     if (el) {
       el.style.transition =
-        'transform 220ms cubic-bezier(0.32, 0.72, 0, 1), opacity 220ms ease'
+        'transform 280ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms ease'
       el.style.transform = 'translate3d(0, 100%, 0)'
-      el.style.opacity = '0.3'
+      el.style.opacity = '0'
       setTimeout(() => {
         setMobileExpanded(false)
-      }, 220)
+        el.style.transform = ''
+        el.style.transition = ''
+        el.style.opacity = ''
+      }, 260)
     } else {
       setMobileExpanded(false)
     }
@@ -497,6 +508,13 @@ const Player = () => {
 
   useEffect(() => {
     if (!visible || !isPhone || !mobileExpanded) return undefined
+
+    const initialEl = document.querySelector('.react-jinke-music-player-mobile')
+    if (initialEl) {
+      initialEl.style.transform = ''
+      initialEl.style.transition = ''
+      initialEl.style.opacity = ''
+    }
 
     let startY = 0
     let startX = 0
@@ -521,6 +539,20 @@ const Player = () => {
       if (
         target?.closest?.('.rc-slider') ||
         target?.closest?.('.rc-slider-handle') ||
+        target?.closest?.('.rc-slider-rail') ||
+        target?.closest?.('.rc-slider-track') ||
+        target?.closest?.('.rc-slider-step') ||
+        target?.closest?.('.react-jinke-music-player-mobile-progress') ||
+        target?.closest?.('.progress-bar-content') ||
+        target?.closest?.('.progress-bar') ||
+        target?.closest?.('.audio-main') ||
+        target?.closest?.('.mobile-volume-control') ||
+        target?.closest?.('.react-jinke-music-player-mobile-toggle') ||
+        target?.closest?.('.react-jinke-music-player-mobile-operation') ||
+        target?.closest?.('.player-content') ||
+        target?.closest?.('button') ||
+        target?.closest?.('.MuiButtonBase-root') ||
+        target?.closest?.('.MuiIconButton-root') ||
         target?.closest?.('input[type="range"]')
       ) {
         startY = -1
@@ -604,7 +636,7 @@ const Player = () => {
           cover={mobileTrack.cover}
           title={mobileTrack.name || mobileTrack.song?.title}
           artist={mobileTrack.singer || mobileTrack.song?.artist}
-          onOpen={() => setMobileExpanded(true)}
+          onOpen={openMobilePlayer}
         />
       )}
       {visible && isPhone && mobileExpanded && (
@@ -639,4 +671,4 @@ const Player = () => {
   )
 }
 
-export { Player }
+export default Player

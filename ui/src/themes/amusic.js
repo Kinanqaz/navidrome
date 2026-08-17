@@ -45,6 +45,9 @@ export default {
     },
     MuiDrawer: {
       root: {
+        background: 'transparent',
+      },
+      paper: {
         background: '#1d1d1d',
         borderRight: '1px solid #fff1',
       },

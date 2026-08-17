@@ -24,8 +24,11 @@ const useStyles = makeStyles(
       paddingTop: 'env(safe-area-inset-top)',
       '& .MuiToolbar-root': {
         paddingRight: `${theme.spacing(1)}px !important`,
-        paddingLeft: `${theme.spacing(0.5)}px !important`,
+        paddingLeft: `${theme.spacing(1)}px !important`,
         minHeight: '48px !important',
+        maxWidth: '100vw',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
         '& #react-admin-title': {
           minWidth: 0,
           flex: '1 1 auto',

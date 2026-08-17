@@ -47,6 +47,9 @@ const useStyles = makeStyles((theme) => {
   return {
     root: {
       width: '100%',
+      maxWidth: '100%',
+      overflowX: 'hidden',
+      boxSizing: 'border-box',
     },
     summary: {
       display: 'flex',
@@ -73,13 +76,13 @@ const useStyles = makeStyles((theme) => {
         borderRadius: 16,
       },
       '& .MuiButton-root': {
-        borderRadius: '18px !important',
-        height: '34px !important',
+        borderRadius: '19px !important',
+        height: '38px !important',
         boxSizing: 'border-box !important',
         margin: '0 !important',
-        padding: '0 13px !important',
+        padding: '0 15px !important',
         textTransform: 'none !important',
-        fontSize: '0.8rem !important',
+        fontSize: '0.875rem !important',
         fontWeight: '500 !important',
         backgroundColor: `${controlBackground} !important`,
         color: `${theme.palette.text.primary} !important`,
@@ -98,13 +101,13 @@ const useStyles = makeStyles((theme) => {
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25) !important',
         },
         '& svg': {
-          fontSize: '1.05rem',
+          fontSize: '1.15rem',
         },
       },
     },
     summaryLabel: {
       color: theme.palette.text.primary,
-      fontSize: '0.875rem',
+      fontSize: '0.925rem',
       fontWeight: 600,
       letterSpacing: '0.01em',
     },
@@ -164,49 +167,73 @@ const useStyles = makeStyles((theme) => {
     row: {
       display: 'grid',
       alignItems: 'center',
-      gap: theme.spacing(1.5),
+      gap: 16,
       minHeight: 58,
-      padding: theme.spacing(0.75, 2, 0.75, 1),
+      padding: theme.spacing(0.75, 1.5, 0.75, 1),
       borderRadius: theme.spacing(1),
       borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
       cursor: 'pointer',
+      WebkitTapHighlightColor: 'transparent',
       transition: theme.transitions.create(['background-color', 'transform'], {
         duration: theme.transitions.duration.shortest,
       }),
       '&:last-child': { borderBottom: 0 },
-      '&:hover': { background: alpha(theme.palette.action.hover, 0.6) },
+      '@media (hover: hover)': {
+        '&:hover': { background: alpha(theme.palette.action.hover, 0.6) },
+      },
+      '&:has($actionsCell:hover):not($playing)': {
+        background: 'transparent',
+      },
+      '&:has($actionsCell:focus-within):not($playing)': {
+        background: 'transparent',
+      },
+      '&:has([aria-expanded="true"]):not($playing)': {
+        background: 'transparent',
+      },
       '&:focus-visible': {
         outline: `2px solid ${theme.palette.primary.main}`,
         outlineOffset: -2,
       },
+      '&:has($actionsCell:focus-within)': {
+        outline: 'none',
+      },
       [theme.breakpoints.down('sm')]: {
-        gap: theme.spacing(1),
+        gap: 16,
         minHeight: 58,
-        padding: theme.spacing(0.75, 1.5, 0.75, 0.5),
+        padding: theme.spacing(0.75, 1, 0.75, 1),
       },
     },
     playing: {
       background: alpha(theme.palette.primary.main, 0.12),
     },
     artwork: {
-      width: 44,
-      height: 44,
-      borderRadius: theme.spacing(1),
+      width: 48,
+      height: 48,
+      borderRadius: 8,
       background: theme.palette.action.hover,
-      [theme.breakpoints.down('sm')]: { width: 38, height: 38 },
+      [theme.breakpoints.down('sm')]: { width: 48, height: 48, borderRadius: 8 },
     },
-    titleCell: { minWidth: 0 },
+    titleCell: {
+      minWidth: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      paddingLeft: 2,
+    },
     title: {
       overflow: 'hidden',
       fontWeight: 600,
-      fontSize: '0.875rem',
-      lineHeight: 1.35,
+      fontSize: '0.925rem',
+      lineHeight: 1.3,
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
     },
     secondary: {
       overflow: 'hidden',
       color: theme.palette.text.secondary,
+      fontSize: '0.8rem',
+      lineHeight: 1.3,
+      marginTop: 2,
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
     },
@@ -542,8 +569,8 @@ export const ModernTrackRows = ({
   )
 
   const defaultGrid = selectionMode
-    ? '36px 44px minmax(160px, 1.6fr) minmax(120px, 1fr) minmax(90px, 0.7fr) 54px 76px'
-    : '44px minmax(160px, 1.6fr) minmax(120px, 1fr) minmax(90px, 0.7fr) 54px 76px'
+    ? '36px 48px minmax(160px, 1.6fr) minmax(120px, 1fr) minmax(90px, 0.7fr) 54px 76px'
+    : '48px minmax(160px, 1.6fr) minmax(120px, 1fr) minmax(90px, 0.7fr) 54px 76px'
 
   const computedGrid = gridTemplateColumns || defaultGrid
 
@@ -649,6 +676,8 @@ export const ModernTrackRows = ({
           className={classes.actionsCell}
           onClick={(event) => event.stopPropagation()}
           onPointerDown={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
         >
           <SongContextMenu record={song} resource="song" showLove={false} />
         </Box>
@@ -714,12 +743,12 @@ export const ModernSongList = () => {
   const gridTemplateColumns = useMemo(() => {
     if (isMobile) {
       return selectionMode
-        ? '34px 40px minmax(0, 1fr) auto'
-        : '40px minmax(0, 1fr) auto'
+        ? '34px 48px minmax(0, 1fr) auto'
+        : '48px minmax(0, 1fr) auto'
     }
     const cols = [
       selectionMode ? '36px' : '',
-      '44px',
+      '48px',
       'minmax(160px, 1.6fr)',
       ...activeColumns.map((col) => col.width),
       '76px',

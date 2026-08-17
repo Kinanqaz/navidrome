@@ -15,9 +15,18 @@ body {
   height: 0 !important;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html,
 body,
-* {
+#root {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   -ms-overflow-style: none !important; /* IE and Edge */
   scrollbar-width: none !important; /* Firefox */
 }

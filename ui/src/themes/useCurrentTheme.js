@@ -54,15 +54,50 @@ const useCurrentTheme = () => {
     document.body.style.backgroundColor = bgColor
   }, [theme])
 
-  // We never server-render, so let media queries resolve on the first render: the default
-  // defers them to an effect, which makes every mount paint the wrong breakpoint and reflow.
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    const rawDrawerOverrides = theme.overrides?.MuiDrawer || {}
+    const { root: rawDrawerRoot, ...restDrawerOverrides } = rawDrawerOverrides
+    const drawerBg =
+      rawDrawerRoot?.background ||
+      rawDrawerRoot?.backgroundColor ||
+      theme.palette?.background?.default ||
+      '#1d1d1d'
+
+    return {
       ...theme,
+      overrides: {
+        ...theme.overrides,
+        MuiDrawer: {
+          ...restDrawerOverrides,
+          root: {
+            ...rawDrawerRoot,
+            background: 'transparent',
+            backgroundColor: 'transparent',
+            '&.MuiDrawer-modal': {
+              background: 'transparent !important',
+              backgroundColor: 'transparent !important',
+            },
+          },
+          paper: {
+            background: drawerBg,
+            backgroundColor: drawerBg,
+            ...theme.overrides?.MuiDrawer?.paper,
+          },
+          modal: {
+            ...theme.overrides?.MuiDrawer?.modal,
+            background: 'transparent !important',
+            backgroundColor: 'transparent !important',
+            '& .MuiBackdrop-root': {
+              backgroundColor: 'transparent !important',
+              backdropFilter: 'none !important',
+              WebkitBackdropFilter: 'none !important',
+            },
+          },
+        },
+      },
       props: { ...theme.props, MuiUseMediaQuery: { noSsr: true } },
-    }),
-    [theme],
-  )
+    }
+  }, [theme])
 }
 
 export default useCurrentTheme

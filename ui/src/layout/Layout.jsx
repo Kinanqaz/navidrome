@@ -12,9 +12,29 @@ import { desktopPlayerWidth } from '../audioplayer/styles'
 
 const useStyles = makeStyles((theme) => ({
   root: {
+    width: '100%',
+    maxWidth: '100vw',
+    overflowX: 'hidden',
+    boxSizing: 'border-box',
     paddingBottom: (props) =>
       props.addPadding ? 'calc(96px + env(safe-area-inset-bottom))' : 0,
+    '& .MuiDrawer-root.MuiDrawer-modal, & .MuiDrawer-modal, & .RaSidebar-root .MuiDrawer-modal':
+      {
+        background: 'transparent !important',
+        backgroundColor: 'transparent !important',
+      },
+    '& .MuiDrawer-modal .MuiBackdrop-root, & .RaSidebar-root .MuiBackdrop-root':
+      {
+        background: 'transparent !important',
+        backgroundColor: 'transparent !important',
+        backdropFilter: 'none !important',
+        WebkitBackdropFilter: 'none !important',
+      },
     '& #main-content': {
+      width: '100%',
+      maxWidth: '100vw',
+      overflowX: 'hidden',
+      boxSizing: 'border-box',
       paddingLeft: theme.spacing(3),
       paddingRight: theme.spacing(3),
       paddingTop: theme.spacing(2),
@@ -24,8 +44,8 @@ const useStyles = makeStyles((theme) => ({
         duration: theme.transitions.duration.shorter,
       }),
       [theme.breakpoints.down('xs')]: {
-        paddingLeft: theme.spacing(0.75),
-        paddingRight: theme.spacing(0.75),
+        paddingLeft: theme.spacing(1),
+        paddingRight: theme.spacing(1),
         paddingTop: theme.spacing(1),
         paddingBottom: (props) =>
           props.addPadding
@@ -56,11 +76,11 @@ const useStyles = makeStyles((theme) => ({
         marginBottom: '0 !important',
         gap: `${theme.spacing(1)}px !important`,
         '& .MuiButton-root': {
-          borderRadius: '18px !important',
-          height: '36px !important',
-          padding: '0 14px !important',
+          borderRadius: '19px !important',
+          height: '38px !important',
+          padding: '0 15px !important',
           textTransform: 'none !important',
-          fontSize: '0.825rem !important',
+          fontSize: '0.875rem !important',
           fontWeight: '500 !important',
           backgroundColor:
             theme.palette.type === 'dark'

@@ -27,8 +27,11 @@ import { Artwork } from '../common/Artwork'
 const useStyles = makeStyles(
   (theme) => ({
     root: {
-      margin: '20px',
+      margin: '16px 0',
       display: 'grid',
+      [theme.breakpoints.down('xs')]: {
+        margin: '10px 0',
+      },
     },
     tileBar: {
       transition: 'all 150ms ease-out',

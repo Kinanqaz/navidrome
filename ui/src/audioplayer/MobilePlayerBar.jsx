@@ -21,21 +21,22 @@ const useStyles = makeStyles(
       right: 'max(10px, env(safe-area-inset-right))',
       bottom: 'calc(10px + env(safe-area-inset-bottom))',
       left: 'max(10px, env(safe-area-inset-left))',
-      zIndex: 998,
+      zIndex: 1350,
       display: 'flex',
       alignItems: 'center',
       height: 70,
       padding: 0,
       borderRadius: 16,
       overflow: 'hidden',
+      touchAction: 'none',
       transform: 'translateZ(0)',
       willChange: 'transform, opacity',
       animation: '$mobileBarIn 220ms cubic-bezier(0.32, 0.72, 0, 1) backwards',
       color: theme.palette.text.primary,
       backgroundColor:
         theme.palette.type === 'dark'
-          ? 'rgba(22, 22, 30, 0.92)'
-          : 'rgba(255, 255, 255, 0.92)',
+          ? 'rgba(22, 22, 30, 0.88)'
+          : 'rgba(255, 255, 255, 0.88)',
       border: `1px solid ${
         theme.palette.type === 'dark'
           ? 'rgba(255, 255, 255, 0.12)'
@@ -48,8 +49,28 @@ const useStyles = makeStyles(
       backdropFilter: 'blur(28px) saturate(190%)',
       WebkitBackdropFilter: 'blur(28px) saturate(190%)',
       transition: 'box-shadow 0.25s ease, background-color 0.25s ease',
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: '-50%',
+        left: '-50%',
+        width: '200%',
+        height: '200%',
+        backgroundImage: (props) =>
+          props.cover ? `url(${props.cover})` : 'none',
+        backgroundPosition: 'center',
+        backgroundSize: 'cover',
+        filter: 'blur(35px) saturate(220%) brightness(0.65)',
+        opacity: (props) =>
+          props.cover ? (theme.palette.type === 'dark' ? 0.45 : 0.25) : 0,
+        transition: 'background-image 0.6s ease, opacity 0.6s ease',
+        pointerEvents: 'none',
+        zIndex: 0,
+      },
     },
     openButton: {
+      position: 'relative',
+      zIndex: 1,
       display: 'flex',
       flex: 1,
       height: '100%',
@@ -62,6 +83,7 @@ const useStyles = makeStyles(
       background: 'transparent',
       border: 0,
       cursor: 'pointer',
+      touchAction: 'none',
       WebkitTapHighlightColor: 'transparent',
       '&:focus-visible': {
         outline: `2px solid ${theme.palette.primary.main}`,
@@ -114,6 +136,8 @@ const useStyles = makeStyles(
       whiteSpace: 'nowrap',
     },
     playButton: {
+      position: 'relative',
+      zIndex: 1,
       flex: '0 0 auto',
       width: 48,
       height: 48,
@@ -125,7 +149,17 @@ const useStyles = makeStyles(
           ? 'rgba(255, 255, 255, 0.08)'
           : 'rgba(0, 0, 0, 0.05)',
       borderRadius: '50%',
+      overflow: 'hidden',
+      outline: 'none !important',
+      border: 'none !important',
+      boxShadow: 'none !important',
+      WebkitTapHighlightColor: 'transparent !important',
+      userSelect: 'none !important',
       transition: 'background-color 0.2s ease, transform 0.15s ease',
+      '&:focus, &:focus-visible, &:active': {
+        outline: 'none !important',
+        boxShadow: 'none !important',
+      },
       '&:hover': {
         backgroundColor:
           theme.palette.type === 'dark'
@@ -163,7 +197,7 @@ const useStyles = makeStyles(
 )
 
 const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
-  const classes = useStyles()
+  const classes = useStyles({ cover })
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
 
@@ -211,9 +245,32 @@ const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
   }, [audio])
 
   const touchStartRef = useRef(null)
+  const lastSwipeTimeRef = useRef(0)
+  const barRef = useRef(null)
+
+  const handleClick = useCallback(
+    (e) => {
+      if (Date.now() - lastSwipeTimeRef.current < 400) {
+        if (e && e.preventDefault) e.preventDefault()
+        return
+      }
+      if (barRef.current) {
+        barRef.current.style.transition =
+          'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease'
+        barRef.current.style.transform = 'translate3d(0, -60px, 0)'
+        barRef.current.style.opacity = '0'
+      }
+      if (onOpen) onOpen()
+    },
+    [onOpen],
+  )
 
   const handleTouchStart = useCallback((e) => {
     if (e.touches.length !== 1) return
+    e.stopPropagation()
+    if (barRef.current) {
+      barRef.current.style.transition = 'none'
+    }
     touchStartRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
@@ -221,9 +278,27 @@ const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
     }
   }, [])
 
+  const handleTouchMove = useCallback((e) => {
+    if (!touchStartRef.current || e.touches.length !== 1) return
+    const touch = e.touches[0]
+    const deltaY = touch.clientY - touchStartRef.current.y
+    const deltaX = touch.clientX - touchStartRef.current.x
+
+    if (deltaY < 0 && Math.abs(deltaY) > Math.abs(deltaX) * 0.8) {
+      if (e.cancelable && e.preventDefault) {
+        e.preventDefault()
+      }
+      e.stopPropagation()
+      if (barRef.current) {
+        barRef.current.style.transform = `translate3d(0, ${deltaY}px, 0)`
+      }
+    }
+  }, [])
+
   const handleTouchEnd = useCallback(
     (e) => {
       if (!touchStartRef.current) return
+      e.stopPropagation()
       const touch = e.changedTouches?.[0]
       if (!touch) return
 
@@ -234,9 +309,20 @@ const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
 
       if (
         (deltaY <= -35 || (deltaY <= -20 && velocityY <= -0.3)) &&
-        Math.abs(deltaY) > Math.abs(deltaX) * 1.1
+        Math.abs(deltaY) > Math.abs(deltaX) * 0.8
       ) {
+        lastSwipeTimeRef.current = Date.now()
+        if (barRef.current) {
+          barRef.current.style.transition =
+            'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease'
+          barRef.current.style.transform = 'translate3d(0, -60px, 0)'
+          barRef.current.style.opacity = '0'
+        }
         if (onOpen) onOpen()
+      } else if (barRef.current) {
+        barRef.current.style.transition =
+          'transform 260ms cubic-bezier(0.16, 1, 0.3, 1)'
+        barRef.current.style.transform = 'translate3d(0, 0, 0)'
       }
       touchStartRef.current = null
     },
@@ -244,15 +330,16 @@ const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
   )
 
   return (
-    <aside className={classes.root} aria-label="Now playing">
+    <aside ref={barRef} className={classes.root} aria-label="Now playing">
       <div className={classes.progressTrack} aria-hidden="true">
         <div className={classes.progress} style={{ width: `${progress}%` }} />
       </div>
       <button
         type="button"
         className={classes.openButton}
-        onClick={onOpen}
+        onClick={handleClick}
         onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         aria-label={`Open full-screen player${title ? ` for ${title}` : ''}`}
       >
