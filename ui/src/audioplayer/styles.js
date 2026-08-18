@@ -120,33 +120,6 @@ const useStyle = makeStyles(
         display: 'none',
       },
     },
-    mobileDragHandle: {
-      position: 'fixed',
-      top: 'max(14px, env(safe-area-inset-top))',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 1401,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: 80,
-      height: 28,
-      cursor: 'pointer',
-      touchAction: 'none',
-      WebkitTapHighlightColor: 'transparent',
-    },
-    mobileDragPill: {
-      width: 38,
-      height: 4.5,
-      borderRadius: 3,
-      backgroundColor: 'rgba(255, 255, 255, 0.5)',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
-      transition: 'background-color 0.15s ease, transform 0.15s ease',
-      '$mobileDragHandle:hover &': {
-        backgroundColor: 'rgba(255, 255, 255, 0.85)',
-        transform: 'scaleX(1.15)',
-      },
-    },
     '@keyframes mobileSlideUp': {
       '0%': {
         transform: 'translate3d(0, 100%, 0)',
@@ -188,6 +161,13 @@ const useStyle = makeStyles(
           backgroundColor: '#0c0c12 !important',
           willChange: 'transform, opacity',
           animation: '$mobileSlideUp 300ms cubic-bezier(0.16, 1, 0.3, 1)',
+          WebkitTapHighlightColor: 'transparent !important',
+          outline: 'none !important',
+          userSelect: 'none !important',
+          '&, & *, & *:focus, & *:focus-visible, & *:active, & *:hover': {
+            WebkitTapHighlightColor: 'transparent !important',
+            outline: 'none !important',
+          },
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -226,12 +206,27 @@ const useStyle = makeStyles(
           },
         },
         '& .react-jinke-music-player-mobile-header': {
+          position: 'relative !important',
           minHeight: 'auto !important',
-          margin: '10px 0 6px !important',
-          padding: '0 40px !important',
+          margin: '0 0 6px !important',
+          padding: '16px 40px 0 !important',
           display: 'flex !important',
           justifyContent: 'center !important',
           alignItems: 'center !important',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '-20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 42,
+            height: 4.5,
+            borderRadius: 3,
+            backgroundColor: 'rgba(255, 255, 255, 0.55)',
+            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.5)',
+            cursor: 'pointer',
+            zIndex: 10,
+          },
         },
         '& .react-jinke-music-player-mobile-header-title': {
           width: '100%',
@@ -263,6 +258,7 @@ const useStyle = makeStyles(
             flex: '0 0 0 !important',
           },
         '& .react-jinke-music-player-mobile-cover': {
+          position: 'relative !important',
           width: 'min(80vw, 350px) !important',
           maxHeight: 'min(42vh, 350px) !important',
           aspectRatio: '1 / 1 !important',
@@ -272,6 +268,13 @@ const useStyle = makeStyles(
           borderRadius: '20px !important',
           boxShadow: '0 18px 44px rgba(0, 0, 0, 0.5) !important',
           overflow: 'hidden !important',
+        },
+        '& .react-jinke-music-player-mobile-cover:has(.nd-lyrics-canvas)': {
+          backgroundColor: '#0c0c12 !important',
+        },
+        '& .react-jinke-music-player-mobile-cover:has(.nd-lyrics-canvas) img.cover': {
+          opacity: '0 !important',
+          visibility: 'hidden !important',
         },
         '& .react-jinke-music-player-mobile-cover img.cover': {
           width: '100%',
@@ -283,6 +286,13 @@ const useStyle = makeStyles(
         '& .react-jinke-music-player-mobile-progress': {
           margin: '4px 0 2px !important',
           touchAction: 'none !important',
+          '& .current-time, & .duration': {
+            display: 'inline-block !important',
+            minWidth: '42px !important',
+            fontVariantNumeric: 'tabular-nums !important',
+            textAlign: 'center !important',
+            userSelect: 'none !important',
+          },
           '& .rc-slider': {
             height: '14px !important',
             padding: '5px 0 !important',
@@ -320,6 +330,11 @@ const useStyle = makeStyles(
           },
         },
         '& .react-jinke-music-player-mobile-toggle': {
+          display: 'flex !important',
+          alignItems: 'center !important',
+          justifyContent: 'center !important',
+          height: '80px !important',
+          minHeight: '80px !important',
           padding: '6px 0 2px !important',
           WebkitTapHighlightColor: 'transparent !important',
           userSelect: 'none !important',
@@ -328,39 +343,60 @@ const useStyle = makeStyles(
             outline: 'none !important',
           },
         },
-        '& .react-jinke-music-player-mobile-toggle .group': {
+        '& .react-jinke-music-player-mobile-toggle .group:not(.play-btn):not(.loading-icon)': {
+          display: 'inline-flex !important',
+          alignItems: 'center !important',
+          justifyContent: 'center !important',
+          width: '44px !important',
+          height: '44px !important',
           WebkitTapHighlightColor: 'transparent !important',
           outline: 'none !important',
           userSelect: 'none !important',
-          '&:focus, &:focus-visible, &:active': {
+          touchAction: 'manipulation !important',
+          cursor: 'pointer !important',
+          color: '#ffffff !important',
+          '&:focus, &:focus-visible, &:active, &:hover': {
             outline: 'none !important',
+            color: '#ffffff !important',
+          },
+          '& svg, &:hover svg, &:focus svg, &:focus-visible svg, &:active svg': {
+            color: '#ffffff !important',
+            fill: '#ffffff !important',
+            outline: 'none !important',
+            fontSize: '34px !important',
           },
         },
-        '& .react-jinke-music-player-mobile-toggle .play-btn': {
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 64,
-          height: 64,
-          margin: '0 24px',
+        '& .react-jinke-music-player-mobile-toggle .play-btn, & .react-jinke-music-player-mobile-toggle .loading-icon': {
+          display: 'inline-flex !important',
+          alignItems: 'center !important',
+          justifyContent: 'center !important',
+          width: '72px !important',
+          height: '72px !important',
+          minWidth: '72px !important',
+          minHeight: '72px !important',
+          margin: '0 24px !important',
           padding: '0 !important',
-          color: '#111',
-          backgroundColor: '#fff',
-          borderRadius: '50%',
-          boxShadow: '0 6px 20px rgba(0, 0, 0, 0.35)',
+          color: '#121212 !important',
+          backgroundColor: '#ffffff !important',
+          borderRadius: '50% !important',
+          boxShadow: '0 8px 26px rgba(0, 0, 0, 0.45) !important',
           WebkitTapHighlightColor: 'transparent !important',
           outline: 'none !important',
           border: 'none !important',
           userSelect: 'none !important',
+          touchAction: 'manipulation !important',
+          cursor: 'pointer !important',
           '&:focus, &:focus-visible, &:active': {
             outline: 'none !important',
-            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.35) !important',
+            boxShadow: '0 8px 26px rgba(0, 0, 0, 0.45) !important',
           },
-        },
-        '& .react-jinke-music-player-mobile-toggle .play-btn svg': {
-          color: '#111 !important',
-          fontSize: '38px !important',
-          outline: 'none !important',
+          '& svg, &:hover svg, &:focus svg, &:focus-visible svg, &:active svg': {
+            color: '#121212 !important',
+            fill: '#121212 !important',
+            fontSize: '38px !important',
+            outline: 'none !important',
+            transform: 'none !important',
+          },
         },
         // Operation section with full-width volume bar row + actions row
         '& .react-jinke-music-player-mobile-operation': {
@@ -386,6 +422,12 @@ const useStyle = makeStyles(
               alignItems: 'center',
               justifyContent: 'center',
               minHeight: 44,
+              touchAction: 'manipulation !important',
+              cursor: 'pointer !important',
+              '& *': {
+                touchAction: 'manipulation !important',
+                cursor: 'pointer !important',
+              },
             },
             '& > .mobile-volume-control': {
               order: 1,
@@ -398,6 +440,21 @@ const useStyle = makeStyles(
               padding: 0,
             },
           },
+        },
+        '& .react-jinke-music-player-mobile-header, & .react-jinke-music-player-mobile-header-right, & .player-corner-menu':
+          {
+            zIndex: '1600 !important',
+            touchAction: 'manipulation !important',
+            cursor: 'pointer !important',
+            '& *': {
+              touchAction: 'manipulation !important',
+              cursor: 'pointer !important',
+            },
+          },
+        '& .music-player-lyric, & .react-draggable:has(.music-player-lyric)': {
+          display: 'none !important',
+          visibility: 'hidden !important',
+          pointerEvents: 'none !important',
         },
       },
       '@media (prefers-reduced-motion)': {
@@ -492,6 +549,8 @@ const useStyle = makeStyles(
           backgroundColor: 'transparent !important',
         },
         '& .music-player-panel .panel-content .img-content': {
+          position: 'relative !important',
+          overflow: 'hidden !important',
           flex: '0 0 auto',
           width: 'min(100%, 400px)',
           height: 'auto',
@@ -503,6 +562,10 @@ const useStyle = makeStyles(
           boxShadow: '0 16px 36px -8px rgba(0, 0, 0, 0.55)',
           animation: 'none !important',
           transform: 'none !important',
+          '&:has(.nd-lyrics-canvas)': {
+            backgroundImage: 'none !important',
+            backgroundColor: '#0c0c12 !important',
+          },
           '& .img-rotate': {
             animation: 'none !important',
             transform: 'none !important',
@@ -635,68 +698,75 @@ const useStyle = makeStyles(
             ),
             '&:focus, &:focus-visible, &:active': {
               outline: 'none !important',
+              color: '#ffffff !important',
             },
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.18) !important',
               transform: 'scale(1.1) !important',
+              color: '#ffffff !important',
             },
             '&:active': {
               transform: 'scale(0.92) !important',
+              color: '#ffffff !important',
             },
           },
         '& .music-player-panel .panel-content .player-content .prev-audio': {
           marginRight: `${theme.spacing(2)}px !important`,
         },
-        '& .music-player-panel .panel-content .player-content .play-btn': {
-          display: 'inline-flex !important',
-          alignItems: 'center !important',
-          justifyContent: 'center !important',
-          width: '62px !important',
-          height: '62px !important',
-          padding: '0 !important',
-          margin: `0 ${theme.spacing(2)}px !important`,
-          borderRadius: '50% !important',
-          backgroundColor: '#ffffff !important',
-          color: '#121212 !important',
-          boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4) !important',
-          cursor: 'pointer !important',
-          outline: 'none !important',
-          border: 'none !important',
-          WebkitTapHighlightColor: 'transparent !important',
-          userSelect: 'none !important',
-          transition: theme.transitions.create(
-            ['transform', 'box-shadow', 'background-color'],
-            {
-              duration: theme.transitions.duration.shortest,
-            },
-          ),
-          '&:focus, &:focus-visible, &:active': {
+        '& .music-player-panel .panel-content .player-content .play-btn, & .music-player-panel .panel-content .player-content .loading-icon':
+          {
+            display: 'inline-flex !important',
+            alignItems: 'center !important',
+            justifyContent: 'center !important',
+            width: '68px !important',
+            height: '68px !important',
+            minWidth: '68px !important',
+            minHeight: '68px !important',
+            padding: '0 !important',
+            margin: `0 ${theme.spacing(2)}px !important`,
+            borderRadius: '50% !important',
+            backgroundColor: '#ffffff !important',
+            color: '#121212 !important',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45) !important',
+            cursor: 'pointer !important',
             outline: 'none !important',
-            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4) !important',
+            border: 'none !important',
+            WebkitTapHighlightColor: 'transparent !important',
+            userSelect: 'none !important',
+            transition: theme.transitions.create(
+              ['transform', 'box-shadow', 'background-color'],
+              {
+                duration: theme.transitions.duration.shortest,
+              },
+            ),
+            '&:focus, &:focus-visible, &:active': {
+              outline: 'none !important',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45) !important',
+            },
+            '&:hover': {
+              transform: 'scale(1.06) !important',
+              boxShadow: '0 10px 30px rgba(0, 0, 0, 0.55) !important',
+            },
+            '&:active': {
+              transform: 'scale(0.94) !important',
+            },
           },
-          '&:hover': {
-            transform: 'scale(1.06) !important',
-            boxShadow: '0 8px 26px rgba(0, 0, 0, 0.5) !important',
-          },
-          '&:active': {
-            transform: 'scale(0.94) !important',
-          },
-        },
         '& .music-player-panel .panel-content .player-content .next-audio': {
           marginLeft: `${theme.spacing(2)}px !important`,
         },
-        '& .music-player-panel .panel-content .player-content .prev-audio svg, & .music-player-panel .panel-content .player-content .next-audio svg':
+        '& .music-player-panel .panel-content .player-content .prev-audio svg, & .music-player-panel .panel-content .player-content .next-audio svg, & .music-player-panel .panel-content .player-content .prev-audio:hover svg, & .music-player-panel .panel-content .player-content .next-audio:hover svg, & .music-player-panel .panel-content .player-content .prev-audio:focus svg, & .music-player-panel .panel-content .player-content .next-audio:focus svg, & .music-player-panel .panel-content .player-content .prev-audio:active svg, & .music-player-panel .panel-content .player-content .next-audio:active svg':
           {
             fontSize: '28px !important',
             color: '#ffffff !important',
-            fill: 'currentColor !important',
+            fill: '#ffffff !important',
             outline: 'none !important',
           },
-        '& .music-player-panel .panel-content .player-content .play-btn svg': {
-          fontSize: '32px !important',
+        '& .music-player-panel .panel-content .player-content .play-btn svg, & .music-player-panel .panel-content .player-content .play-btn:hover svg, & .music-player-panel .panel-content .player-content .play-btn:focus svg, & .music-player-panel .panel-content .player-content .play-btn:active svg, & .music-player-panel .panel-content .player-content .loading-icon svg, & .music-player-panel .panel-content .player-content .loading-icon:hover svg, & .music-player-panel .panel-content .player-content .loading-icon:focus svg, & .music-player-panel .panel-content .player-content .loading-icon:active svg': {
+          fontSize: '34px !important',
           color: '#121212 !important',
           fill: '#121212 !important',
           outline: 'none !important',
+          transform: 'none !important',
         },
         // Row 2: Centered Volume Control (Speaker Icon + Slider side-by-side)
         '& .music-player-panel .panel-content .player-content .play-sounds': {
@@ -859,7 +929,7 @@ const useStyle = makeStyles(
             position: 'absolute !important',
             top: `${theme.spacing(2)}px !important`,
             left: `${theme.spacing(2)}px !important`,
-            zIndex: 10,
+            zIndex: '1600 !important',
             display: 'inline-flex !important',
             alignItems: 'center !important',
             justifyContent: 'center !important',
@@ -869,7 +939,7 @@ const useStyle = makeStyles(
           position: 'absolute !important',
           top: `${theme.spacing(2)}px !important`,
           right: `${theme.spacing(2)}px !important`,
-          zIndex: 10,
+          zIndex: '1600 !important',
           display: 'inline-flex !important',
           alignItems: 'center !important',
           justifyContent: 'center !important',
@@ -946,34 +1016,6 @@ const useStyle = makeStyles(
               verticalAlign: 'middle !important',
             },
           },
-        '& .music-player-lyric': {
-          top: theme.spacing(10),
-          right: `max(${theme.spacing(3)}px, calc((${desktopPlayerWidth} - 400px) / 2))`,
-          bottom: 'auto',
-          left: 'auto !important',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: `min(calc(${desktopPlayerWidth} - ${theme.spacing(
-            6,
-          )}px), 400px)`,
-          height: `min(calc(${desktopPlayerWidth} - ${theme.spacing(
-            6,
-          )}px), 400px)`,
-          boxSizing: 'border-box',
-          padding: theme.spacing(4),
-          overflow: 'hidden',
-          backgroundColor: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
-          borderRadius: theme.spacing(2),
-          boxShadow: theme.shadows[8],
-          color: theme.palette.text.primary,
-          fontSize: '1.4rem',
-          lineHeight: 1.7,
-          cursor: 'default',
-          textShadow: 'none',
-          transform: 'none !important',
-        },
         '& .audio-lists-panel': {
           top: theme.spacing(6),
           right: 0,

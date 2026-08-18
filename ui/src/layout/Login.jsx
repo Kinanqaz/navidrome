@@ -8,9 +8,8 @@ import CardActions from '@material-ui/core/CardActions'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Link from '@material-ui/core/Link'
 import TextField from '@material-ui/core/TextField'
-import { ThemeProvider, makeStyles } from '@material-ui/core/styles'
+import { ThemeProvider, createTheme, makeStyles } from '@material-ui/core/styles'
 import {
-  createMuiTheme,
   useLogin,
   useNotify,
   useTranslate,
@@ -407,7 +406,7 @@ const LoginWithTheme = (props) => {
   const version = useVersion()
 
   return (
-    <ThemeProvider theme={createMuiTheme(theme)}>
+    <ThemeProvider theme={createTheme(theme)}>
       <Login key={version} {...props} />
     </ThemeProvider>
   )

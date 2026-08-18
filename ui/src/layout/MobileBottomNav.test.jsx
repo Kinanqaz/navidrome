@@ -9,7 +9,7 @@ vi.mock('react-admin', () => ({
 }))
 
 describe('<MobileBottomNav />', () => {
-  it('renders navigation links for songs, categories, recently, and most', () => {
+  it('renders navigation links for songs, genres, recently, and most', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <MobileBottomNav />
@@ -20,9 +20,9 @@ describe('<MobileBottomNav />', () => {
       'href',
       '/song',
     )
-    expect(screen.getByRole('link', { name: 'Categories' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Genres' })).toHaveAttribute(
       'href',
-      '/categories',
+      '/genres',
     )
     expect(screen.getByRole('link', { name: 'Recently' })).toHaveAttribute(
       'href',

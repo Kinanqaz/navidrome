@@ -5,8 +5,6 @@ import {
   Datagrid,
   DateField,
   EditButton,
-  Filter,
-  SearchInput,
   SimpleList,
   TextField,
   UrlField,
@@ -16,6 +14,7 @@ import {
 } from 'react-admin'
 import {
   List,
+  ModernFilterBar,
   defaultRowsPerPageOptions,
   getStoredPerPage,
   ToggleFieldsMenu,
@@ -44,46 +43,20 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const RadioFilter = (props) => {
-  const classes = useStyles()
   const translate = useTranslate()
   const { permissions } = usePermissions()
   const isAdmin = permissions === 'admin'
   const isNotSmall = useMediaQuery((theme) => theme.breakpoints.up('sm'))
 
-  if (props.context === 'button') {
-    return null
-  }
-
-  const filterElements = [
-    <SearchInput
-      id="search"
-      key="name"
-      source="name"
-      alwaysOn
-      className={classes.searchInput}
-    />,
-  ]
-
   return (
-    <div className={classes.toolbarRoot}>
-      <div className={classes.leftGroup}>
-        <Filter
-          {...props}
-          variant="outlined"
-          classes={{ form: classes.filterForm }}
-        >
-          {filterElements}
-        </Filter>
-      </div>
-      <div className={classes.rightGroup}>
-        {isAdmin && (
-          <CreateButton basePath="/radio">
-            {translate('ra.action.create')}
-          </CreateButton>
-        )}
-        {isNotSmall && <ToggleFieldsMenu resource="radio" />}
-      </div>
-    </div>
+    <ModernFilterBar resource="radio" searchSource="name" {...props}>
+      {isAdmin && (
+        <CreateButton basePath="/radio">
+          {translate('ra.action.create')}
+        </CreateButton>
+      )}
+      {isNotSmall && <ToggleFieldsMenu resource="radio" />}
+    </ModernFilterBar>
   )
 }
 

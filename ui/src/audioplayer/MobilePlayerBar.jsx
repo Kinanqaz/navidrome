@@ -4,100 +4,83 @@ import { makeStyles } from '@material-ui/core/styles'
 import PauseRoundedIcon from '@material-ui/icons/PauseRounded'
 import PlayArrowRoundedIcon from '@material-ui/icons/PlayArrowRounded'
 
-const useStyles = makeStyles(
-  (theme) => ({
-    '@keyframes mobileBarIn': {
-      '0%': {
-        transform: 'translate3d(0, 24px, 0) scale(0.96)',
-        opacity: 0,
-      },
-      '100%': {
-        transform: 'translate3d(0, 0, 0) scale(1)',
-        opacity: 1,
-      },
+const useStyles = makeStyles((theme) => ({
+  root: {
+    position: 'fixed',
+    right: 'max(10px, env(safe-area-inset-right))',
+    bottom: 'calc(68px + env(safe-area-inset-bottom))',
+    left: 'max(10px, env(safe-area-inset-left))',
+    zIndex: 1350,
+    display: 'flex',
+    alignItems: 'center',
+    height: 84,
+    padding: 0,
+    borderRadius: 18,
+    overflow: 'hidden',
+    touchAction: 'none',
+    transform: 'translateZ(0)',
+    willChange: 'transform, opacity',
+    color: theme.palette.text.primary,
+    backgroundColor:
+      theme.palette.type === 'dark'
+        ? 'rgba(22, 22, 30, 0.88)'
+        : 'rgba(255, 255, 255, 0.88)',
+    border: `1px solid ${
+      theme.palette.type === 'dark'
+        ? 'rgba(255, 255, 255, 0.12)'
+        : 'rgba(0, 0, 0, 0.08)'
+    }`,
+    boxShadow:
+      theme.palette.type === 'dark'
+        ? '0 10px 36px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.35)'
+        : '0 10px 36px rgba(0, 0, 0, 0.16), 0 3px 10px rgba(0, 0, 0, 0.08)',
+    backdropFilter: 'blur(28px) saturate(190%)',
+    WebkitBackdropFilter: 'blur(28px) saturate(190%)',
+    transition: 'box-shadow 0.25s ease, background-color 0.25s ease',
+  },
+  backdrop: {
+    position: 'absolute',
+    top: '-50%',
+    left: '-50%',
+    width: '200%',
+    height: '200%',
+    backgroundPosition: 'center',
+    backgroundSize: 'cover',
+    filter: 'blur(35px) saturate(220%) brightness(0.65)',
+    transition: 'background-image 0.6s ease, opacity 0.6s ease',
+    pointerEvents: 'none',
+    zIndex: 0,
+  },
+  openButton: {
+    position: 'relative',
+    zIndex: 1,
+    display: 'flex',
+    flex: 1,
+    height: '100%',
+    minWidth: 0,
+    alignItems: 'center',
+    padding: 0,
+    color: 'inherit',
+    font: 'inherit',
+    textAlign: 'left',
+    background: 'transparent',
+    border: 0,
+    cursor: 'pointer',
+    touchAction: 'none',
+    WebkitTapHighlightColor: 'transparent',
+    '&:focus-visible': {
+      outline: `2px solid ${theme.palette.primary.main}`,
+      outlineOffset: -2,
     },
-    root: {
-      position: 'fixed',
-      right: 'max(10px, env(safe-area-inset-right))',
-      bottom: 'calc(68px + env(safe-area-inset-bottom))',
-      left: 'max(10px, env(safe-area-inset-left))',
-      zIndex: 1350,
-      display: 'flex',
-      alignItems: 'center',
-      height: 84,
-      padding: 0,
-      borderRadius: 18,
-      overflow: 'hidden',
-      touchAction: 'none',
-      transform: 'translateZ(0)',
-      willChange: 'transform, opacity',
-      animation: '$mobileBarIn 220ms cubic-bezier(0.32, 0.72, 0, 1) backwards',
-      color: theme.palette.text.primary,
-      backgroundColor:
-        theme.palette.type === 'dark'
-          ? 'rgba(22, 22, 30, 0.88)'
-          : 'rgba(255, 255, 255, 0.88)',
-      border: `1px solid ${
-        theme.palette.type === 'dark'
-          ? 'rgba(255, 255, 255, 0.12)'
-          : 'rgba(0, 0, 0, 0.08)'
-      }`,
-      boxShadow:
-        theme.palette.type === 'dark'
-          ? '0 10px 36px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.35)'
-          : '0 10px 36px rgba(0, 0, 0, 0.16), 0 3px 10px rgba(0, 0, 0, 0.08)',
-      backdropFilter: 'blur(28px) saturate(190%)',
-      WebkitBackdropFilter: 'blur(28px) saturate(190%)',
-      transition: 'box-shadow 0.25s ease, background-color 0.25s ease',
-      '&::before': {
-        content: '""',
-        position: 'absolute',
-        top: '-50%',
-        left: '-50%',
-        width: '200%',
-        height: '200%',
-        backgroundImage: (props) =>
-          props.cover ? `url(${props.cover})` : 'none',
-        backgroundPosition: 'center',
-        backgroundSize: 'cover',
-        filter: 'blur(35px) saturate(220%) brightness(0.65)',
-        opacity: (props) =>
-          props.cover ? (theme.palette.type === 'dark' ? 0.45 : 0.25) : 0,
-        transition: 'background-image 0.6s ease, opacity 0.6s ease',
-        pointerEvents: 'none',
-        zIndex: 0,
-      },
-    },
-    openButton: {
-      position: 'relative',
-      zIndex: 1,
-      display: 'flex',
-      flex: 1,
-      height: '100%',
-      minWidth: 0,
-      alignItems: 'center',
-      padding: 0,
-      color: 'inherit',
-      font: 'inherit',
-      textAlign: 'left',
-      background: 'transparent',
-      border: 0,
-      cursor: 'pointer',
-      touchAction: 'none',
-      WebkitTapHighlightColor: 'transparent',
-      '&:focus-visible': {
-        outline: `2px solid ${theme.palette.primary.main}`,
-        outlineOffset: -2,
-      },
-    },
-    cover: {
-      flex: '0 0 auto',
-      width: 84,
-      height: '100%',
-      objectFit: 'cover',
-      backgroundColor: theme.palette.action.hover,
-      borderRadius: 0,
-    },
+  },
+  cover: {
+    flex: '0 0 auto',
+    width: 84,
+    height: '100%',
+    objectFit: 'cover',
+    backgroundColor: theme.palette.action.hover,
+    borderRadius: 0,
+  },
     emptyCover: {
       display: 'block',
       flex: '0 0 auto',
@@ -138,9 +121,11 @@ const useStyles = makeStyles(
     playButton: {
       position: 'relative',
       zIndex: 1,
-      flex: '0 0 auto',
+      flex: '0 0 52px',
       width: 52,
       height: 52,
+      minWidth: 52,
+      minHeight: 52,
       marginRight: theme.spacing(1.5),
       padding: 0,
       color: theme.palette.text.primary,
@@ -155,23 +140,24 @@ const useStyles = makeStyles(
       boxShadow: 'none !important',
       WebkitTapHighlightColor: 'transparent !important',
       userSelect: 'none !important',
-      transition: 'background-color 0.2s ease, transform 0.15s ease',
+      transition: 'background-color 0.2s ease',
+      transform: 'none !important',
       '&:focus, &:focus-visible, &:active': {
         outline: 'none !important',
         boxShadow: 'none !important',
+        transform: 'none !important',
       },
       '&:hover': {
         backgroundColor:
           theme.palette.type === 'dark'
             ? 'rgba(255, 255, 255, 0.18)'
             : 'rgba(0, 0, 0, 0.1)',
-        transform: 'scale(1.06)',
-      },
-      '&:active': {
-        transform: 'scale(0.94)',
+        transform: 'none !important',
       },
       '& svg': {
         fontSize: 34,
+        display: 'block',
+        transform: 'none !important',
       },
     },
     progressTrack: {
@@ -197,7 +183,7 @@ const useStyles = makeStyles(
 )
 
 const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
-  const classes = useStyles({ cover })
+  const classes = useStyles()
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
 
@@ -234,15 +220,29 @@ const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
     }
   }, [audio])
 
-  const togglePlayback = useCallback(() => {
-    if (!audio) return
-    if (audio.paused) {
-      const playPromise = audio.play()
-      if (playPromise?.catch) playPromise.catch(() => {})
-    } else {
-      audio.pause()
-    }
-  }, [audio])
+  const lastActionTimeRef = useRef(0)
+
+  const togglePlayback = useCallback(
+    (e) => {
+      if (e) {
+        if (typeof e.preventDefault === 'function') e.preventDefault()
+        if (typeof e.stopPropagation === 'function') e.stopPropagation()
+      }
+      const now = Date.now()
+      if (now - lastActionTimeRef.current < 250) return
+      lastActionTimeRef.current = now
+
+      if (!audio) return
+
+      if (audio.paused) {
+        const playPromise = audio.play?.()
+        if (playPromise?.catch) playPromise.catch(() => {})
+      } else {
+        audio.pause?.()
+      }
+    },
+    [audio],
+  )
 
   const touchStartRef = useRef(null)
   const lastSwipeTimeRef = useRef(0)
@@ -285,9 +285,6 @@ const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
     const deltaX = touch.clientX - touchStartRef.current.x
 
     if (deltaY < 0 && Math.abs(deltaY) > Math.abs(deltaX) * 0.8) {
-      if (e.cancelable && e.preventDefault) {
-        e.preventDefault()
-      }
       e.stopPropagation()
       if (barRef.current) {
         barRef.current.style.transform = `translate3d(0, ${deltaY}px, 0)`
@@ -331,6 +328,14 @@ const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
 
   return (
     <aside ref={barRef} className={classes.root} aria-label="Now playing">
+      <div
+        className={classes.backdrop}
+        style={{
+          backgroundImage: cover ? `url("${cover}")` : 'none',
+          opacity: cover ? 0.35 : 0,
+        }}
+        aria-hidden="true"
+      />
       <div className={classes.progressTrack} aria-hidden="true">
         <div className={classes.progress} style={{ width: `${progress}%` }} />
       </div>
@@ -356,6 +361,7 @@ const MobilePlayerBar = ({ audio, cover, title, artist, onOpen }) => {
       <IconButton
         className={classes.playButton}
         onClick={togglePlayback}
+        onTouchEnd={togglePlayback}
         aria-label={playing ? 'Pause' : 'Play'}
       >
         {playing ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}

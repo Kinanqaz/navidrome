@@ -4,16 +4,11 @@ import {
   Datagrid,
   DatagridBody,
   DatagridRow,
-  Filter,
-  FilterButton,
   FunctionField,
   NumberField,
-  SearchInput,
-  SelectInput,
   TextField,
   useListContext,
   useTranslate,
-  NullableBooleanInput,
   usePermissions,
 } from 'react-admin'
 import { useMediaQuery, withWidth } from '@material-ui/core'
@@ -26,6 +21,7 @@ import {
   ArtistContextMenu,
   ArtworkAvatar,
   List,
+  ModernFilterBar,
   ToggleFieldsMenu,
   useGetHandleArtistClick,
   RatingField,
@@ -72,84 +68,25 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const ArtistFilter = (props) => {
-  const classes = useStyles()
   const translate = useTranslate()
-  const { permissions } = usePermissions()
-  const isAdmin = permissions === 'admin'
   const isNotSmall = useMediaQuery((theme) => theme.breakpoints.up('sm'))
-  const {
-    resource = 'artist',
-    displayedFilters,
-    filterValues,
-    showFilter,
-  } = useListContext(props)
 
-  if (props.context === 'button') {
-    return null
-  }
-
-  const rolesObj = en?.resources?.artist?.roles
-  const roles = Object.keys(rolesObj).reduce((acc, role) => {
-    acc.push({
+  const roles = useMemo(() => {
+    const rolesObj = en?.resources?.artist?.roles || {}
+    const r = Object.keys(rolesObj).map((role) => ({
       id: role,
       name: translate(`resources.artist.roles.${role}`, {
         smart_count: 2,
       }),
-    })
-    return acc
-  }, [])
-  roles?.sort((a, b) => a.name.localeCompare(b.name))
-
-  const filterElements = [
-    <SearchInput
-      id="search"
-      key="name"
-      source="name"
-      alwaysOn
-      className={classes.searchInput}
-    />,
-    <SelectInput
-      key="role"
-      source="role"
-      choices={roles}
-      alwaysOn
-    />,
-    ...(config.enableFavourites
-      ? [
-          <NullableBooleanInput
-            key="starred"
-            source="starred"
-            label={<FavoriteIcon fontSize={'small'} />}
-          />,
-        ]
-      : []),
-    ...(isAdmin
-      ? [<NullableBooleanInput key="missing" source="missing" />]
-      : []),
-  ]
+    }))
+    r.sort((a, b) => a.name.localeCompare(b.name))
+    return r
+  }, [translate])
 
   return (
-    <div className={classes.toolbarRoot}>
-      <div className={classes.leftGroup}>
-        <Filter
-          {...props}
-          variant="outlined"
-          classes={{ form: classes.filterForm }}
-        >
-          {filterElements}
-        </Filter>
-      </div>
-      <div className={classes.rightGroup}>
-        <FilterButton
-          resource={resource}
-          filters={filterElements}
-          displayedFilters={displayedFilters}
-          filterValues={filterValues}
-          showFilter={showFilter}
-        />
-        {isNotSmall && <ToggleFieldsMenu resource="artist" />}
-      </div>
-    </div>
+    <ModernFilterBar resource="artist" searchSource="name" roles={roles} {...props}>
+      {isNotSmall && <ToggleFieldsMenu resource="artist" />}
+    </ModernFilterBar>
   )
 }
 

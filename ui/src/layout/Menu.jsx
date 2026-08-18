@@ -178,10 +178,10 @@ const Menu = ({ dense = false }) => {
         renderSongListMenuItemLink(type, songLists[type]),
       )}
       <MenuItemLink
-        to="/categories"
+        to="/genres"
         activeClassName={classes.active}
         className={classes.menuItem}
-        primaryText="Categories"
+        primaryText="Genres"
         leftIcon={<CategoryOutlinedIcon />}
         sidebarIsOpen={open}
         dense={dense}

@@ -37,6 +37,13 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     borderRadius: '50%',
     color: theme.palette.text.secondary,
+    outline: 'none !important',
+    boxShadow: 'none !important',
+    WebkitTapHighlightColor: 'transparent !important',
+    '&:focus, &:focus-visible, &:active': {
+      outline: 'none !important',
+      boxShadow: 'none !important',
+    },
     transition: theme.transitions.create(
       ['background-color', 'color', 'transform'],
       {
@@ -62,6 +69,13 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: '50%',
     backgroundColor: 'transparent',
     color: '#ffffff',
+    outline: 'none !important',
+    boxShadow: 'none !important',
+    WebkitTapHighlightColor: 'transparent !important',
+    '&:focus, &:focus-visible, &:active': {
+      outline: 'none !important',
+      boxShadow: 'none !important',
+    },
     transition: theme.transitions.create(
       ['background-color', 'color', 'transform'],
       {
@@ -89,6 +103,8 @@ const useStyles = makeStyles((theme) => ({
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
+    outline: 'none !important',
+    WebkitTapHighlightColor: 'transparent !important',
     [theme.breakpoints.up('md')]: {
       position: 'absolute',
       top: theme.spacing(2),
@@ -107,6 +123,13 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     fontSize: '18px',
     color: theme.palette.text.secondary,
+    outline: 'none !important',
+    boxShadow: 'none !important',
+    WebkitTapHighlightColor: 'transparent !important',
+    '&:focus, &:focus-visible, &:active': {
+      outline: 'none !important',
+      boxShadow: 'none !important',
+    },
     '& svg': {
       fontSize: '18px',
     },

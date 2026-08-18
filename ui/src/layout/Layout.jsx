@@ -4,7 +4,7 @@ import { Layout as RALayout, toggleSidebar } from 'react-admin'
 import { makeStyles } from '@material-ui/core/styles'
 import {
   ThemeProvider as MuiThemeProvider,
-  createMuiTheme,
+  createTheme,
 } from '@material-ui/core/styles'
 import { HotKeys } from 'react-hotkeys'
 import Menu from './Menu'
@@ -173,7 +173,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Layout = (props) => {
   const themeConfig = useCurrentTheme()
-  const muiTheme = useMemo(() => createMuiTheme(themeConfig), [themeConfig])
+  const muiTheme = useMemo(() => createTheme(themeConfig), [themeConfig])
   const queue = useSelector((state) => state.player?.queue)
   const classes = useStyles({ addPadding: queue.length > 0 })
   const dispatch = useDispatch()

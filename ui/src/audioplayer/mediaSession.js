@@ -13,9 +13,10 @@ export const buildMediaSessionArtwork = (info = {}) => {
   const song = info.song || {}
   const sizes = [96, 128, 192, 256, 384, 512]
 
-  if (song.id || info.trackId) {
+  const trackId = song.id || info.trackId || info.id
+  if (trackId) {
     const record = {
-      id: song.id || info.trackId,
+      id: trackId,
       album: song.album || info.name,
       updatedAt: song.updatedAt,
       imageHash: song.imageHash,
@@ -46,14 +47,14 @@ export const updateMediaSessionMetadata = (info) => {
     return
   }
 
-  if (!info || (!info.name && !info.song?.title && !info.title)) {
+  if (!info || (!info.name && !info.song?.title && !info.title && !info.trackId)) {
     navigator.mediaSession.metadata = null
     return
   }
 
   const song = info.song || {}
-  const title = song.title || info.name || info.title || ''
-  const artist = song.artist || info.singer || info.artist || ''
+  const title = song.title || info.name || info.title || 'Navidrome'
+  const artist = song.artist || song.albumArtist || info.singer || info.artist || ''
   const album = song.album || (info.isRadio ? 'Radio' : '')
 
   const artwork = buildMediaSessionArtwork(info)
@@ -70,12 +71,94 @@ export const updateMediaSessionMetadata = (info) => {
   }
 }
 
+export const updateMediaSessionPlaybackState = (isPlaying) => {
+  if (
+    typeof window !== 'undefined' &&
+    'mediaSession' in navigator &&
+    navigator.mediaSession
+  ) {
+    try {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused'
+    } catch (e) {
+      // ignore
+    }
+  }
+}
+
+export const updateMediaSessionPositionState = (audio) => {
+  if (
+    typeof window === 'undefined' ||
+    !('mediaSession' in navigator) ||
+    !navigator.mediaSession ||
+    typeof navigator.mediaSession.setPositionState !== 'function' ||
+    !audio
+  ) {
+    return
+  }
+  try {
+    const duration = Number.isFinite(audio.duration) ? audio.duration : 0
+    const position = Number.isFinite(audio.currentTime) ? audio.currentTime : 0
+    const playbackRate =
+      Number.isFinite(audio.playbackRate) && audio.playbackRate > 0
+        ? audio.playbackRate
+        : 1
+    if (duration > 0 && position >= 0 && position <= duration) {
+      navigator.mediaSession.setPositionState({
+        duration,
+        playbackRate,
+        position,
+      })
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+export const setupMediaSessionActionHandlers = ({
+  onPlay,
+  onPause,
+  onPrev,
+  onNext,
+  onSeekTo,
+  onSeekBackward,
+  onSeekForward,
+}) => {
+  if (typeof window === 'undefined' || !('mediaSession' in navigator)) return
+
+  const actions = [
+    ['play', onPlay],
+    ['pause', onPause],
+    ['previoustrack', onPrev],
+    ['nexttrack', onNext],
+    ['seekto', onSeekTo],
+    ['seekbackward', onSeekBackward],
+    ['seekforward', onSeekForward],
+  ]
+
+  actions.forEach(([action, handler]) => {
+    try {
+      if (typeof handler === 'function') {
+        navigator.mediaSession.setActionHandler(action, handler)
+      } else {
+        navigator.mediaSession.setActionHandler(action, null)
+      }
+    } catch (e) {
+      // ignore unsupported actions
+    }
+  })
+}
+
 export const clearMediaSessionMetadata = () => {
   if (
     typeof window !== 'undefined' &&
     'mediaSession' in navigator &&
     navigator.mediaSession
   ) {
-    navigator.mediaSession.metadata = null
+    try {
+      navigator.mediaSession.metadata = null
+      navigator.mediaSession.playbackState = 'none'
+    } catch (e) {
+      // ignore
+    }
   }
 }

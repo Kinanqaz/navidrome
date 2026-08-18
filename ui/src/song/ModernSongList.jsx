@@ -26,7 +26,7 @@ import {
   SongBulkActions,
   SongContextMenu,
 } from '../common'
-import { setTrack } from '../actions'
+import { playTracks } from '../actions'
 import config from '../config'
 
 const useStyles = makeStyles((theme) => {
@@ -877,7 +877,7 @@ export const ModernSongList = () => {
         <ModernTrackRows
           songs={songs}
           currentSongId={currentSongId}
-          onPlay={(song) => dispatch(setTrack(song))}
+          onPlay={(song) => dispatch(playTracks(data, ids, song.id))}
           selectedIds={selectedIds}
           selectionMode={selectionMode}
           activeColumns={activeColumns}

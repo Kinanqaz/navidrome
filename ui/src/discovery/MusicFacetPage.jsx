@@ -4,59 +4,157 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  Grid,
   LinearProgress,
   Typography,
 } from '@material-ui/core'
 import { alpha, makeStyles } from '@material-ui/core/styles'
 import CategoryOutlinedIcon from '@material-ui/icons/CategoryOutlined'
+import ChevronRightRoundedIcon from '@material-ui/icons/ChevronRightRounded'
 import WbSunnyOutlinedIcon from '@material-ui/icons/WbSunnyOutlined'
 import { useGetList } from 'react-admin'
 import { Link } from 'react-router-dom'
 import { buildFacetSongUrl } from './facetLinks'
 
 const useStyles = makeStyles((theme) => ({
-  root: { width: '100%', padding: theme.spacing(1, 0, 3) },
+  root: {
+    width: '100%',
+    boxSizing: 'border-box',
+    padding: theme.spacing(1.5, 2, 8),
+    [theme.breakpoints.up('sm')]: {
+      padding: theme.spacing(2.5, 3, 8),
+    },
+    [theme.breakpoints.up('md')]: {
+      padding: theme.spacing(3, 4, 8),
+    },
+  },
   heading: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing(2),
+    marginBottom: theme.spacing(1.5),
   },
-  title: { fontSize: '1.35rem', fontWeight: 750 },
-  card: {
-    height: '100%',
-    backgroundColor: alpha(theme.palette.background.paper, 0.4),
-    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-    borderRadius: theme.spacing(1.5),
-    boxShadow: 'none',
-    transition: 'all 0.18s ease-in-out',
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.action.hover, 0.7),
-      borderColor: alpha(theme.palette.primary.main, 0.5),
-      transform: 'translateY(-2px)',
+  title: {
+    fontSize: '1.4rem',
+    fontWeight: 800,
+    letterSpacing: '-0.02em',
+    color: theme.palette.text.primary,
+  },
+  badge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: theme.spacing(0.25, 1.2),
+    borderRadius: 16,
+    backgroundColor:
+      theme.palette.type === 'dark'
+        ? 'rgba(255, 255, 255, 0.08)'
+        : 'rgba(0, 0, 0, 0.06)',
+    color: theme.palette.text.secondary,
+    fontSize: '0.78rem',
+    fontWeight: 600,
+    letterSpacing: '0.01em',
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+    gap: 10,
+    width: '100%',
+    boxSizing: 'border-box',
+    [theme.breakpoints.down('xs')]: {
+      gridTemplateColumns: '1fr',
+      gap: 10,
     },
   },
-  action: { height: '100%' },
+  card: {
+    backgroundColor:
+      theme.palette.type === 'dark'
+        ? 'rgba(255, 255, 255, 0.04)'
+        : 'rgba(0, 0, 0, 0.02)',
+    border: `1px solid ${
+      theme.palette.type === 'dark'
+        ? 'rgba(255, 255, 255, 0.08)'
+        : 'rgba(0, 0, 0, 0.06)'
+    }`,
+    borderRadius: 14,
+    boxShadow:
+      theme.palette.type === 'dark'
+        ? '0 2px 10px rgba(0, 0, 0, 0.2)'
+        : '0 2px 8px rgba(0, 0, 0, 0.03)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    transition:
+      'transform 0.18s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease',
+    '&:hover': {
+      backgroundColor:
+        theme.palette.type === 'dark'
+          ? 'rgba(255, 255, 255, 0.07)'
+          : 'rgba(0, 0, 0, 0.04)',
+      borderColor: alpha(theme.palette.primary.main, 0.4),
+      transform: 'translateY(-2px)',
+      boxShadow:
+        theme.palette.type === 'dark'
+          ? '0 6px 18px rgba(0, 0, 0, 0.3)'
+          : '0 6px 14px rgba(0, 0, 0, 0.06)',
+      '& $chevron': {
+        transform: 'translateX(2px)',
+        color: theme.palette.primary.main,
+        opacity: 0.9,
+      },
+    },
+  },
+  action: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
+  },
   content: {
     display: 'flex',
     alignItems: 'center',
-    gap: theme.spacing(1.5),
-    minHeight: 82,
-    padding: `${theme.spacing(1.5)}px !important`,
+    justifyContent: 'space-between',
+    minHeight: 54,
+    padding: `${theme.spacing(1, 1.4)}px !important`,
+  },
+  leftGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1.4),
+    minWidth: 0,
+    flex: 1,
   },
   avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     background: alpha(theme.palette.primary.main, 0.14),
     color: theme.palette.primary.main,
+    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.18)}`,
+    flexShrink: 0,
+    '& svg': {
+      fontSize: 19,
+    },
   },
   name: {
     overflow: 'hidden',
-    fontWeight: 700,
+    fontSize: '0.94rem',
+    fontWeight: 650,
+    lineHeight: 1.25,
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    color: theme.palette.text.primary,
+    flex: 1,
+    minWidth: 0,
   },
-  meta: { color: theme.palette.text.secondary },
-  empty: { padding: theme.spacing(8, 2), textAlign: 'center' },
+  chevron: {
+    fontSize: '1.2rem',
+    color: theme.palette.text.disabled,
+    opacity: 0.45,
+    transition: 'all 0.18s ease',
+    flexShrink: 0,
+    marginLeft: theme.spacing(0.5),
+  },
+  empty: {
+    padding: theme.spacing(6, 2),
+    textAlign: 'center',
+  },
 }))
 
 export const MusicFacetPage = ({ kind }) => {
@@ -65,7 +163,7 @@ export const MusicFacetPage = ({ kind }) => {
   const resource = isMood ? 'tag' : 'genre'
   const nameField = isMood ? 'tagValue' : 'name'
   const filterField = isMood ? 'mood' : 'genre_id'
-  const title = isMood ? 'Moods' : 'Categories'
+  const title = isMood ? 'Moods' : 'Genres'
   const Icon = isMood ? WbSunnyOutlinedIcon : CategoryOutlinedIcon
   const { ids, data, loading } = useGetList(
     resource,
@@ -86,40 +184,34 @@ export const MusicFacetPage = ({ kind }) => {
         <Typography className={classes.title} component="h1">
           {title}
         </Typography>
-        <Typography color="textSecondary" variant="caption">
-          {items.length} available
-        </Typography>
+        <span className={classes.badge}>
+          {items.length} {items.length === 1 ? 'item' : 'items'}
+        </span>
       </div>
       {items.length > 0 ? (
-        <Grid container spacing={2}>
+        <div className={classes.grid}>
           {items.map((item) => (
-            <Grid item key={item.id} xs={12} sm={6} md={4} lg={3}>
-              <Card className={classes.card}>
-                <CardActionArea
-                  className={classes.action}
-                  component={Link}
-                  to={buildFacetSongUrl(filterField, item.id)}
-                >
-                  <CardContent className={classes.content}>
+            <Card key={item.id} className={classes.card}>
+              <CardActionArea
+                className={classes.action}
+                component={Link}
+                to={buildFacetSongUrl(filterField, item.id)}
+              >
+                <CardContent className={classes.content}>
+                  <div className={classes.leftGroup}>
                     <Avatar className={classes.avatar}>
-                      <Icon fontSize="small" />
+                      <Icon />
                     </Avatar>
-                    <div style={{ minWidth: 0 }}>
-                      <Typography className={classes.name} variant="body2">
-                        {item[nameField]}
-                      </Typography>
-                      <Typography className={classes.meta} variant="caption">
-                        {item.songCount
-                          ? `${item.songCount} tracks`
-                          : 'View tracks'}
-                      </Typography>
-                    </div>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </Grid>
+                    <Typography className={classes.name} variant="body2">
+                      {item[nameField]}
+                    </Typography>
+                  </div>
+                  <ChevronRightRoundedIcon className={classes.chevron} />
+                </CardContent>
+              </CardActionArea>
+            </Card>
           ))}
-        </Grid>
+        </div>
       ) : (
         <div className={classes.empty}>
           <Typography color="textSecondary">
@@ -131,5 +223,6 @@ export const MusicFacetPage = ({ kind }) => {
   )
 }
 
-export const CategoryPage = () => <MusicFacetPage kind="category" />
+export const GenrePage = () => <MusicFacetPage kind="genre" />
+export const CategoryPage = GenrePage
 export const MoodPage = () => <MusicFacetPage kind="mood" />

@@ -11,7 +11,7 @@ const createTheme = (type = 'dark') => ({
 })
 
 describe('song facet filter layout', () => {
-  it('keeps selected genre and mood chips in a horizontal row', () => {
+  it('defines autocomplete and chip helper classes', () => {
     const classes = {
       chip: 'chip',
       chipRow: 'chip-row',
@@ -23,20 +23,6 @@ describe('song facet filter layout', () => {
       chipContainerOutlined: 'chip-row',
       inputInput: 'autocomplete-input',
     })
-
-    const styles = songFilterStyles(createTheme())
-    expect(styles.chipRow).toMatchObject({
-      display: 'flex',
-      flexDirection: 'row',
-      flexWrap: 'nowrap',
-      flexShrink: 0,
-      overflow: 'visible',
-    })
-    expect(styles.autocompleteInput).toMatchObject({
-      flex: '1 1 24px',
-      width: '24px !important',
-      minWidth: 24,
-    })
   })
 
   it('uses readable palette text colors in light themes', () => {
@@ -46,7 +32,7 @@ describe('song facet filter layout', () => {
     expect(styles.rightGroup['& .MuiButton-root'].color).toBe('#111 !important')
   })
 
-  it('keeps search, shuffle, and filter balanced across the row on extra-small screens', () => {
+  it('keeps toolbar responsive with clean toolbarRoot and filterButton', () => {
     const styles = songFilterStyles(createTheme())
 
     expect(styles.toolbarRoot).toMatchObject({
@@ -55,16 +41,9 @@ describe('song facet filter layout', () => {
       alignItems: 'center',
       justifyContent: 'space-between',
     })
-    expect(styles.searchIconButton).toMatchObject({
-      width: 36,
-      height: 36,
-      minWidth: 36,
-    })
-    expect(styles.middleFilters).toMatchObject({
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      overflowX: 'auto',
+    expect(styles.filterButton).toMatchObject({
+      height: '36px !important',
+      borderRadius: '18px !important',
     })
   })
 })

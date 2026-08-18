@@ -16,7 +16,13 @@ const keyHandlers = (audioInstance, playerState) => {
   return {
     TOGGLE_PLAY: (e) => {
       e.preventDefault()
-      audioInstance && audioInstance.togglePlay()
+      if (!audioInstance) return
+      if (audioInstance.paused) {
+        const playPromise = audioInstance.play?.()
+        if (playPromise?.catch) playPromise.catch(() => {})
+      } else {
+        audioInstance.pause?.()
+      }
     },
     VOL_UP: () =>
       (audioInstance.volume = Math.min(1, audioInstance.volume + 0.1)),

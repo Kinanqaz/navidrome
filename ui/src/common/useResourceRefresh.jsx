@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux'
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRefresh, useDataProvider } from 'react-admin'
 
 /**
@@ -67,63 +67,65 @@ import { useRefresh, useDataProvider } from 'react-admin'
 const trackResources = ['song', 'playlistTrack']
 
 export const useResourceRefresh = (...visibleResources) => {
-  const [lastTime, setLastTime] = useState(Date.now())
+  const lastTimeRef = useRef(Date.now())
   const refresh = useRefresh()
   const dataProvider = useDataProvider()
   const refreshData = useSelector(
-    (state) => state.activity?.refresh || { lastReceived: lastTime },
+    (state) => state.activity?.refresh || { lastReceived: lastTimeRef.current },
   )
   const loadedResources = useSelector((state) => state.admin?.resources)
   const { resources, lastReceived } = refreshData
 
-  if (lastReceived <= lastTime) {
-    return
-  }
-  setLastTime(lastReceived)
+  useEffect(() => {
+    if (!lastReceived || lastReceived <= lastTimeRef.current) {
+      return
+    }
+    lastTimeRef.current = lastReceived
 
-  const isWatched = (r) =>
-    visibleResources.length === 0 || visibleResources.includes(r)
-  // A wildcard on a resource this component does not show is somebody else's business: reloading
-  // the page for it throws away the list the user is looking at.
-  const hasWildcard =
-    resources &&
-    (resources['*'] === '*' ||
-      Object.entries(resources).some(
-        ([r, ids]) => isWatched(r) && ids.includes?.('*'),
-      ))
+    const isWatched = (r) =>
+      visibleResources.length === 0 || visibleResources.includes(r)
+    // A wildcard on a resource this component does not show is somebody else's business: reloading
+    // the page for it throws away the list the user is looking at.
+    const hasWildcard =
+      resources &&
+      (resources['*'] === '*' ||
+        Object.entries(resources).some(
+          ([r, ids]) => isWatched(r) && ids.includes?.('*'),
+        ))
 
-  if (hasWildcard) {
-    refresh()
-    return
-  }
-  if (!resources) {
-    return
-  }
-  Object.keys(resources).forEach((r) => {
-    if (isWatched(r)) {
-      if (resources[r]?.length > 0) {
-        // Only refetch records already in the store; ones the UI never loaded will
-        // arrive fresh (with the new artwork) when navigated to, so fetching them is wasteful.
-        const loaded = loadedResources?.[r]?.data || {}
-        const ids = resources[r].filter((id) => loaded[id] !== undefined)
+    if (hasWildcard) {
+      refresh()
+      return
+    }
+    if (!resources) {
+      return
+    }
+    Object.keys(resources).forEach((r) => {
+      if (isWatched(r)) {
+        if (resources[r]?.length > 0) {
+          // Only refetch records already in the store; ones the UI never loaded will
+          // arrive fresh (with the new artwork) when navigated to, so fetching them is wasteful.
+          const loaded = loadedResources?.[r]?.data || {}
+          const ids = resources[r].filter((id) => loaded[id] !== undefined)
+          if (ids.length > 0) {
+            dataProvider.getMany(r, { ids })
+          }
+        }
+      }
+    })
+
+    // A track with no art of its own is served its album's, so an album's new coverArt id moves its
+    // tracks' too. The dependent ids are unbounded server-side, but the store knows which are loaded.
+    if (resources.album?.length > 0) {
+      const albumIds = new Set(resources.album)
+      trackResources.filter(isWatched).forEach((r) => {
+        const ids = Object.values(loadedResources?.[r]?.data || {})
+          .filter((t) => albumIds.has(t?.albumId))
+          .map((t) => t.id)
         if (ids.length > 0) {
           dataProvider.getMany(r, { ids })
         }
-      }
+      })
     }
-  })
-
-  // A track with no art of its own is served its album's, so an album's new coverArt id moves its
-  // tracks' too. The dependent ids are unbounded server-side, but the store knows which are loaded.
-  if (resources.album?.length > 0) {
-    const albumIds = new Set(resources.album)
-    trackResources.filter(isWatched).forEach((r) => {
-      const ids = Object.values(loadedResources?.[r]?.data || {})
-        .filter((t) => albumIds.has(t?.albumId))
-        .map((t) => t.id)
-      if (ids.length > 0) {
-        dataProvider.getMany(r, { ids })
-      }
-    })
-  }
+  }, [lastReceived, resources, refresh, dataProvider, loadedResources, visibleResources])
 }

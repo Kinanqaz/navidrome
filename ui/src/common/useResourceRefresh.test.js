@@ -8,7 +8,8 @@ vi.mock('react', async () => {
   const actual = await vi.importActual('react')
   return {
     ...actual,
-    useState: vi.fn(),
+    useRef: vi.fn(),
+    useEffect: vi.fn(),
   }
 })
 
@@ -30,8 +31,7 @@ vi.mock('react-admin', async () => {
 })
 
 describe('useResourceRefresh', () => {
-  const setState = vi.fn()
-  const useStateMock = (initState) => [initState, setState]
+  let lastTimeRef
   const refresh = vi.fn()
   const useRefreshMock = () => refresh
   const getMany = vi.fn()
@@ -60,7 +60,9 @@ describe('useResourceRefresh', () => {
     )
 
   beforeEach(() => {
-    vi.spyOn(React, 'useState').mockImplementation(useStateMock)
+    lastTimeRef = { current: 0 }
+    vi.spyOn(React, 'useRef').mockImplementation(() => lastTimeRef)
+    vi.spyOn(React, 'useEffect').mockImplementation((fn) => fn())
     vi.spyOn(RA, 'useRefresh').mockImplementation(useRefreshMock)
     vi.spyOn(RA, 'useDataProvider').mockImplementation(useDataProviderMock)
     lastTime = new Date(new Date().valueOf() + 1000)
@@ -75,16 +77,17 @@ describe('useResourceRefresh', () => {
 
     useResourceRefresh()
 
-    expect(setState).toHaveBeenCalledWith(lastTime)
+    expect(lastTimeRef.current).toBe(lastTime)
   })
 
   it("does not run again if lastTime didn't change", () => {
-    vi.spyOn(React, 'useState').mockImplementation(() => [lastTime, setState])
+    lastTimeRef.current = lastTime
     mockStore({ refresh: { lastReceived: lastTime } })
 
     useResourceRefresh()
 
-    expect(setState).not.toHaveBeenCalled()
+    expect(refresh).not.toHaveBeenCalled()
+    expect(getMany).not.toHaveBeenCalled()
   })
 
   describe('No visible resources specified', () => {
