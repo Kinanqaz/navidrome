@@ -64,5 +64,5 @@ jobs:
             GIT_TAG=custom-${{ github.ref_name }}
           cache-from: type=gha,scope=custom-image-amd64
           cache-to: type=gha,mode=max,scope=custom-image-amd64
-          provenance: mode=max
-          sbom: true
+          provenance: false
+          sbom: false
