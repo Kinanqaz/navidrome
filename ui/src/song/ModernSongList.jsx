@@ -25,6 +25,7 @@ import {
   RatingField,
   SongBulkActions,
   SongContextMenu,
+  MobileQuickActions,
 } from '../common'
 import { playTracks } from '../actions'
 import config from '../config'
@@ -806,6 +807,7 @@ export const ModernSongList = () => {
 
   return (
     <div className={classes.root}>
+      {isMobile && <MobileQuickActions resource="song" />}
       {selectionMode ? (
         <div className={classes.summary}>
           <Box display="flex" alignItems="center" gap={1}>

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Avatar,
   Card,
@@ -14,6 +14,7 @@ import WbSunnyOutlinedIcon from '@material-ui/icons/WbSunnyOutlined'
 import { useGetList } from 'react-admin'
 import { Link } from 'react-router-dom'
 import { buildFacetSongUrl } from './facetLinks'
+import subsonic from '../subsonic'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -99,6 +100,10 @@ const useStyles = makeStyles((theme) => ({
         color: theme.palette.primary.main,
         opacity: 0.9,
       },
+      '& $trackCount': {
+        color: theme.palette.primary.main,
+        backgroundColor: alpha(theme.palette.primary.main, 0.12),
+      },
     },
   },
   action: {
@@ -143,13 +148,33 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     minWidth: 0,
   },
+  rightGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
+    flexShrink: 0,
+    marginLeft: theme.spacing(1),
+  },
+  trackCount: {
+    fontSize: '0.76rem',
+    fontWeight: 600,
+    color: theme.palette.text.secondary,
+    backgroundColor:
+      theme.palette.type === 'dark'
+        ? 'rgba(255, 255, 255, 0.08)'
+        : 'rgba(0, 0, 0, 0.05)',
+    padding: theme.spacing(0.2, 0.85),
+    borderRadius: 10,
+    letterSpacing: '0.01em',
+    whiteSpace: 'nowrap',
+    transition: 'all 0.18s ease',
+  },
   chevron: {
     fontSize: '1.2rem',
     color: theme.palette.text.disabled,
     opacity: 0.45,
     transition: 'all 0.18s ease',
     flexShrink: 0,
-    marginLeft: theme.spacing(0.5),
   },
   empty: {
     padding: theme.spacing(6, 2),
@@ -165,12 +190,34 @@ export const MusicFacetPage = ({ kind }) => {
   const filterField = isMood ? 'mood' : 'genre_id'
   const title = isMood ? 'Moods' : 'Genres'
   const Icon = isMood ? WbSunnyOutlinedIcon : CategoryOutlinedIcon
+
+  const [subsonicCounts, setSubsonicCounts] = useState({})
+
   const { ids, data, loading } = useGetList(
     resource,
     { page: 1, perPage: 0 },
     { field: nameField, order: 'ASC' },
     isMood ? { tag_name: 'mood' } : {},
   )
+
+  useEffect(() => {
+    if (!isMood) {
+      subsonic
+        .getGenres()
+        .then((genreList) => {
+          const map = {}
+          genreList.forEach((g) => {
+            const val = (g.value || g.name || '').toLowerCase()
+            if (val) {
+              map[val] = g.songCount ?? g.song_count ?? 0
+            }
+          })
+          setSubsonicCounts(map)
+        })
+        .catch(() => {})
+    }
+  }, [isMood])
+
   const items = useMemo(
     () => (ids || []).map((id) => data?.[id]).filter(Boolean),
     [data, ids],
@@ -190,27 +237,39 @@ export const MusicFacetPage = ({ kind }) => {
       </div>
       {items.length > 0 ? (
         <div className={classes.grid}>
-          {items.map((item) => (
-            <Card key={item.id} className={classes.card}>
-              <CardActionArea
-                className={classes.action}
-                component={Link}
-                to={buildFacetSongUrl(filterField, item.id)}
-              >
-                <CardContent className={classes.content}>
-                  <div className={classes.leftGroup}>
-                    <Avatar className={classes.avatar}>
-                      <Icon />
-                    </Avatar>
-                    <Typography className={classes.name} variant="body2">
-                      {item[nameField]}
-                    </Typography>
-                  </div>
-                  <ChevronRightRoundedIcon className={classes.chevron} />
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          ))}
+          {items.map((item) => {
+            const displayName = item.tagValue || item.name || ''
+            const count =
+              item.songCount ??
+              item.song_count ??
+              (displayName ? subsonicCounts[displayName.toLowerCase()] : undefined)
+            return (
+              <Card key={item.id} className={classes.card}>
+                <CardActionArea
+                  className={classes.action}
+                  component={Link}
+                  to={buildFacetSongUrl(filterField, item.id)}
+                >
+                  <CardContent className={classes.content}>
+                    <div className={classes.leftGroup}>
+                      <Avatar className={classes.avatar}>
+                        <Icon />
+                      </Avatar>
+                      <Typography className={classes.name} variant="body2">
+                        {displayName}
+                      </Typography>
+                    </div>
+                    <div className={classes.rightGroup}>
+                      {count !== undefined && count !== null && (
+                        <span className={classes.trackCount}>{count}</span>
+                      )}
+                      <ChevronRightRoundedIcon className={classes.chevron} />
+                    </div>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            )
+          })}
         </div>
       ) : (
         <div className={classes.empty}>

@@ -8,7 +8,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     position: 'fixed',
     right: 'max(10px, env(safe-area-inset-right))',
-    bottom: 'calc(68px + env(safe-area-inset-bottom))',
+    bottom: 'calc(80px + env(safe-area-inset-bottom))',
     left: 'max(10px, env(safe-area-inset-left))',
     zIndex: 1350,
     display: 'flex',

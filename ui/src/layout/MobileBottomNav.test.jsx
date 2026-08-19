@@ -9,7 +9,7 @@ vi.mock('react-admin', () => ({
 }))
 
 describe('<MobileBottomNav />', () => {
-  it('renders navigation links for songs, genres, recently, and most', () => {
+  it('renders navigation links for songs, artists, genres, and moods', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <MobileBottomNav />
@@ -20,17 +20,17 @@ describe('<MobileBottomNav />', () => {
       'href',
       '/song',
     )
+    expect(screen.getByRole('link', { name: 'Artists' })).toHaveAttribute(
+      'href',
+      '/artist',
+    )
     expect(screen.getByRole('link', { name: 'Genres' })).toHaveAttribute(
       'href',
       '/genres',
     )
-    expect(screen.getByRole('link', { name: 'Recently' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Moods' })).toHaveAttribute(
       'href',
-      '/song/recentlyPlayed',
-    )
-    expect(screen.getByRole('link', { name: 'Most' })).toHaveAttribute(
-      'href',
-      '/song/mostPlayed',
+      '/moods',
     )
   })
 
@@ -45,7 +45,7 @@ describe('<MobileBottomNav />', () => {
     expect(activeLink).toHaveAttribute('aria-current', 'page')
     expect(activeLink.className).toContain('navItemActive')
 
-    const inactiveLink = screen.getByRole('link', { name: 'Most' })
+    const inactiveLink = screen.getByRole('link', { name: 'Artists' })
     expect(inactiveLink).not.toHaveAttribute('aria-current')
     expect(inactiveLink.className).not.toContain('navItemActive')
   })

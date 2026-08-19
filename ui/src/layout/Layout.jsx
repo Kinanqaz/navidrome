@@ -23,8 +23,8 @@ const useStyles = makeStyles((theme) => ({
     boxSizing: 'border-box',
     paddingBottom: (props) =>
       props.addPadding
-        ? 'calc(170px + env(safe-area-inset-bottom))'
-        : 'calc(70px + env(safe-area-inset-bottom))',
+        ? 'calc(184px + env(safe-area-inset-bottom))'
+        : 'calc(84px + env(safe-area-inset-bottom))',
     '& .MuiDrawer-root.MuiDrawer-modal, & .MuiDrawer-modal, & .RaSidebar-root .MuiDrawer-modal':
       {
         background: 'transparent !important',
@@ -37,6 +37,27 @@ const useStyles = makeStyles((theme) => ({
         backdropFilter: 'none !important',
         WebkitBackdropFilter: 'none !important',
       },
+    [theme.breakpoints.down('sm')]: {
+      '& [class*="appFrame"], & [class*="contentWithSidebar"], & [class*="RaLayout-appFrame"], & [class*="RaLayout-content"], & [class*="RaLayout-children"]':
+        {
+          marginTop: '0 !important',
+          paddingTop: '0 !important',
+        },
+      '& .list-page, & .RaList-root, & .RaList-main, & .RaList-content, & .MuiCard-root':
+        {
+          marginTop: '0 !important',
+          paddingTop: '0 !important',
+          marginBottom: '0 !important',
+          boxShadow: 'none !important',
+        },
+      '& .RaList-header, & div[class*="RaList-header"]': {
+        display: 'none !important',
+        minHeight: '0 !important',
+        height: '0 !important',
+        margin: '0 !important',
+        padding: '0 !important',
+      },
+    },
     '& #main-content': {
       width: '100%',
       maxWidth: '100vw',
@@ -50,14 +71,19 @@ const useStyles = makeStyles((theme) => ({
         easing: theme.transitions.easing.easeInOut,
         duration: theme.transitions.duration.shorter,
       }),
+      [theme.breakpoints.down('sm')]: {
+        paddingTop: 'calc(16px + env(safe-area-inset-top)) !important',
+        paddingLeft: '16px !important',
+        paddingRight: '16px !important',
+      },
       [theme.breakpoints.down('xs')]: {
-        paddingLeft: theme.spacing(1),
-        paddingRight: theme.spacing(1),
-        paddingTop: theme.spacing(1),
+        paddingLeft: '16px !important',
+        paddingRight: '16px !important',
+        paddingTop: 'calc(16px + env(safe-area-inset-top)) !important',
         paddingBottom: (props) =>
           props.addPadding
-            ? 'calc(174px + env(safe-area-inset-bottom))'
-            : 'calc(74px + env(safe-area-inset-bottom))',
+            ? 'calc(186px + env(safe-area-inset-bottom))'
+            : 'calc(86px + env(safe-area-inset-bottom))',
       },
       '& thead.MuiTableHead-root, & .RaDatagrid-thead, & .RaDatagrid-headerRow': {
         [theme.breakpoints.down('xs')]: {
@@ -68,15 +94,26 @@ const useStyles = makeStyles((theme) => ({
         backgroundColor: 'transparent !important',
         boxShadow: 'none !important',
         backgroundImage: 'none !important',
+        margin: '0 !important',
+        padding: '0 !important',
       },
       '& .RaList-main': {
         backgroundColor: 'transparent',
+        padding: '0 !important',
+        margin: '0 !important',
+        width: '100% !important',
       },
       '& .RaList-header': {
-        minHeight: 'auto',
-        marginBottom: 0,
-        paddingTop: 0,
-        paddingBottom: 0,
+        display: 'none !important',
+        minHeight: '0 !important',
+        height: '0 !important',
+        marginBottom: '0 !important',
+        marginTop: '0 !important',
+        padding: '0 !important',
+        width: '100% !important',
+      },
+      '& .RaList-actions': {
+        display: 'none !important',
       },
       '& .RaTopToolbar-root': {
         padding: '0 !important',
@@ -116,26 +153,16 @@ const useStyles = makeStyles((theme) => ({
         },
       },
       // Global filter form overrides — React-Admin FilterForm defaults
-      // set marginTop:-16px, alignItems:flex-end, minHeight:80px, pointerEvents:none
-      '& form[class*="RaFilterForm"]': {
-        display: 'flex !important',
-        flexDirection: 'row !important',
-        alignItems: 'center !important',
-        flexWrap: 'nowrap !important',
-        minHeight: 'auto !important',
-        marginTop: '0 !important',
-        marginBottom: '0 !important',
-        marginLeft: '0 !important',
-        marginRight: '0 !important',
+      '& form[class*="RaFilterForm"], & .RaFilterForm-root': {
+        display: 'block !important',
+        width: '100% !important',
+        maxWidth: '100% !important',
+        minHeight: '0 !important',
+        height: 'auto !important',
+        margin: '0 !important',
         padding: '0 !important',
-        gap: `${theme.spacing(1)}px !important`,
+        boxSizing: 'border-box !important',
         pointerEvents: 'auto !important',
-        [theme.breakpoints.down('xs')]: {
-          flexWrap: 'wrap !important',
-          width: '100% !important',
-          margin: '0 !important',
-          padding: '0 !important',
-        },
       },
       // React-Admin FilterFormInput spacer + clearfix
       '& .filter-field > div:last-child:not(:first-child)': {
@@ -145,7 +172,13 @@ const useStyles = makeStyles((theme) => ({
         {
           display: 'none !important',
         },
-      '& .filter-field': {
+      '& .filter-field, & div[class*="filter-field"]': {
+        display: 'block !important',
+        width: '100% !important',
+        maxWidth: '100% !important',
+        margin: '0 !important',
+        padding: '0 !important',
+        boxSizing: 'border-box !important',
         alignItems: 'center !important',
         pointerEvents: 'auto !important',
       },

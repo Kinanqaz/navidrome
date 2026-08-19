@@ -1,14 +1,16 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useHistory } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import clsx from 'clsx'
 import {
   Filter,
   SearchInput,
   useListContext,
-  usePermissions,
   useTranslate,
   useGetList,
+  useDataProvider,
+  useNotify,
 } from 'react-admin'
 import {
   IconButton,
@@ -20,14 +22,17 @@ import {
   Select,
   Typography,
   Button,
+  useMediaQuery,
 } from '@material-ui/core'
 import { Autocomplete } from '@material-ui/lab'
 import { makeStyles } from '@material-ui/core/styles'
+import { alpha } from '@material-ui/core/styles'
 import FilterListIcon from '@material-ui/icons/FilterList'
 import FavoriteIcon from '@material-ui/icons/Favorite'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
-import WarningIcon from '@material-ui/icons/Warning'
 import CloseIcon from '@material-ui/icons/Close'
+import { MdTrendingUp, MdShuffle, MdHistory } from 'react-icons/md'
+import { playTracks } from '../actions'
 import config from '../config'
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -46,6 +51,9 @@ export const modernFilterStyles = (theme) => {
     ? 'rgba(255, 255, 255, 0.28)'
     : 'rgba(0, 0, 0, 0.28)'
   const subtleText = theme.palette.text.secondary || theme.palette.text.primary
+  const primaryColor = theme.palette.primary?.main || '#2196f3'
+  const primaryContrast = theme.palette.primary?.contrastText || '#ffffff'
+  const shadowColor = theme.palette.common?.black || '#000000'
 
   return {
     toolbarRoot: {
@@ -63,11 +71,100 @@ export const modernFilterStyles = (theme) => {
       height: 38,
       gap: theme.spacing(1),
       boxSizing: 'border-box',
-      [theme.breakpoints.down('xs')]: {
-        gap: theme.spacing(0.75),
-        marginLeft: theme.spacing(-1),
-        width: `calc(100% + ${theme.spacing(1)}px)`,
+      [theme.breakpoints.down('sm')]: {
+        display: 'none !important',
       },
+    },
+    // Mobile Quick Action Circle Buttons at the top of scrollable content
+    mobileQuickActionsRow: {
+      display: 'none',
+      [theme.breakpoints.down('sm')]: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        margin: '8px 0 16px 0',
+        padding: '6px 0 2px 0',
+        boxSizing: 'border-box',
+      },
+    },
+    quickActionItem: {
+      flex: '1 1 0%',
+      maxWidth: '25%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      userSelect: 'none',
+      WebkitTapHighlightColor: 'transparent',
+      transition: 'transform 0.15s ease',
+      padding: '4px 0',
+      overflow: 'visible',
+      '&:active': {
+        transform: 'scale(0.92)',
+      },
+    },
+    quickActionCircle: {
+      width: 52,
+      height: 52,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: `0 2px 8px ${alpha(shadowColor, isDark ? 0.25 : 0.08)}`,
+      transition: 'all 0.2s ease',
+      border: `1px solid ${alpha(primaryColor, isDark ? 0.22 : 0.18)}`,
+      backgroundColor: isDark
+        ? alpha(primaryColor, 0.12)
+        : alpha(primaryColor, 0.08),
+      color: primaryColor,
+      position: 'relative',
+      '&:hover': {
+        backgroundColor: isDark
+          ? alpha(primaryColor, 0.2)
+          : alpha(primaryColor, 0.15),
+        borderColor: alpha(primaryColor, 0.4),
+      },
+    },
+    filterCircle: {
+      backgroundColor: isDark
+        ? alpha(primaryColor, 0.12)
+        : alpha(primaryColor, 0.08),
+      color: primaryColor,
+    },
+    filterCircleActive: {
+      backgroundColor: `${primaryColor} !important`,
+      color: `${primaryContrast} !important`,
+      boxShadow: `0 2px 10px ${alpha(primaryColor, 0.45)} !important`,
+      borderColor: `${primaryColor} !important`,
+    },
+    mostPlayedCircle: {
+      backgroundColor: isDark
+        ? alpha(primaryColor, 0.12)
+        : alpha(primaryColor, 0.08),
+      color: primaryColor,
+    },
+    historyCircle: {
+      backgroundColor: isDark
+        ? alpha(primaryColor, 0.12)
+        : alpha(primaryColor, 0.08),
+      color: primaryColor,
+    },
+    shuffleCircle: {
+      backgroundColor: isDark
+        ? alpha(primaryColor, 0.12)
+        : alpha(primaryColor, 0.08),
+      color: primaryColor,
+    },
+    quickActionLabel: {
+      fontSize: '0.72rem',
+      fontWeight: 500,
+      marginTop: 5,
+      color: theme.palette.text.secondary,
+      letterSpacing: '0.01em',
+      textAlign: 'center',
     },
     leftGroup: {
       display: 'flex',
@@ -80,10 +177,6 @@ export const modernFilterStyles = (theme) => {
       minHeight: 36,
       maxHeight: 36,
       boxSizing: 'border-box',
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: 0,
-        paddingLeft: 0,
-      },
       '& .RaFilter-root, & [class*="RaFilter-root"]': {
         margin: '0 !important',
         padding: '0 !important',
@@ -140,12 +233,6 @@ export const modernFilterStyles = (theme) => {
       display: 'inline-flex !important',
       alignItems: 'center !important',
       verticalAlign: 'middle !important',
-      [theme.breakpoints.down('xs')]: {
-        width: '100px !important',
-        maxWidth: '100px !important',
-        minWidth: '85px !important',
-        flex: '0 0 100px !important',
-      },
       '& .MuiFormControl-root': {
         margin: '0 !important',
         padding: '0 !important',
@@ -298,23 +385,6 @@ export const modernFilterStyles = (theme) => {
         alignItems: 'center !important',
         justifyContent: 'center !important',
         verticalAlign: 'middle !important',
-        [theme.breakpoints.down('xs')]: {
-          minWidth: '36px !important',
-          width: '36px !important',
-          height: '36px !important',
-          padding: '0 !important',
-          borderRadius: '18px !important',
-          '& .MuiButton-startIcon': {
-            margin: '0 !important',
-          },
-          '& .MuiButton-label': {
-            width: '100%',
-            justifyContent: 'center',
-          },
-          '& span:not(.MuiButton-startIcon):not(.MuiTouchRipple-root)': {
-            display: 'none',
-          },
-        },
         '&:hover': {
           backgroundColor: `${controlHoverBackground} !important`,
           borderColor: `${controlHoverBorder} !important`,
@@ -352,10 +422,10 @@ export const modernFilterStyles = (theme) => {
       maxWidth: '85vw',
       maxHeight: 480,
       borderRadius: 14,
-      backgroundColor: isDark ? '#1a1a24' : '#ffffff',
-      border: `1px solid ${controlBorder}`,
+      backgroundColor: isDark ? '#141414' : '#ffffff',
+      border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : controlBorder}`,
       boxShadow: isDark
-        ? '0 16px 48px rgba(0, 0, 0, 0.65)'
+        ? '0 16px 48px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05)'
         : '0 12px 36px rgba(0, 0, 0, 0.15)',
       overflow: 'hidden',
       display: 'flex',
@@ -466,10 +536,13 @@ export const ModernFilterBar = ({
 }) => {
   const classes = useStyles()
   const translate = useTranslate()
-  const { permissions } = usePermissions()
-  const isAdmin = permissions === 'admin'
+  const dispatch = useDispatch()
+  const dataProvider = useDataProvider()
+  const notify = useNotify()
 
   const history = useHistory()
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'))
+
   const {
     filterValues = {},
     setFilters,
@@ -524,13 +597,19 @@ export const ModernFilterBar = ({
     [releaseTypesData],
   )
 
-  // Calculate active filter count (excluding search terms)
+  // Calculate active facet filter count (explicit user filters only)
   const activeCount = useMemo(() => {
-    const searchKeys = ['name', 'title', 'q', 'path']
+    const userFacetKeys = [
+      'starred',
+      'genre_id',
+      'mood',
+      'releasetype',
+      'role',
+      'year',
+    ]
     let count = 0
-    Object.keys(filterValues || {}).forEach((key) => {
-      if (searchKeys.includes(key)) return
-      const val = filterValues[key]
+    userFacetKeys.forEach((key) => {
+      const val = filterValues?.[key]
       if (val !== undefined && val !== '' && val !== null) {
         if (Array.isArray(val)) {
           if (val.length > 0) count += 1
@@ -543,12 +622,17 @@ export const ModernFilterBar = ({
   }, [filterValues])
 
   const handleClearAll = useCallback(() => {
-    const searchKeys = ['name', 'title', 'q', 'path']
-    const newFilters = {}
-    searchKeys.forEach((key) => {
-      if (filterValues[key]) {
-        newFilters[key] = filterValues[key]
-      }
+    const userFacetKeys = [
+      'starred',
+      'genre_id',
+      'mood',
+      'releasetype',
+      'role',
+      'year',
+    ]
+    const newFilters = { ...filterValues }
+    userFacetKeys.forEach((key) => {
+      delete newFilters[key]
     })
     setFilters(newFilters, displayedFilters)
     if (Object.keys(newFilters).length === 0 && history && basePath) {
@@ -577,6 +661,30 @@ export const ModernFilterBar = ({
     [filterValues, setFilters, displayedFilters, history, basePath],
   )
 
+  const handleShuffleAll = useCallback(() => {
+    dataProvider
+      .getList('song', {
+        pagination: { page: 1, perPage: 500 },
+        sort: { field: 'random', order: 'ASC' },
+        filter: { ...filterValues, missing: false },
+      })
+      .then((res) => {
+        const data = {}
+        res.data.forEach((song) => {
+          data[song.id] = song
+        })
+        dispatch(playTracks(data))
+      })
+      .catch(() => {
+        notify('ra.page.error', 'warning')
+      })
+  }, [dataProvider, filterValues, dispatch, notify])
+
+  // On mobile screens, ModernFilterBar is replaced by MobileQuickActions rendered at the top of the content
+  if (isMobile) {
+    return null
+  }
+
   // Don't render if react-admin requests 'button' context
   if (props.context === 'button') {
     return null
@@ -584,45 +692,49 @@ export const ModernFilterBar = ({
 
   const hasFilterOptions =
     config.enableFavourites ||
-    isAdmin ||
     resource === 'song' ||
     resource === 'album' ||
     resource === 'artist' ||
     resource === 'playlist'
 
   return (
-    <div className={classes.toolbarRoot}>
-      <div className={classes.leftGroup}>
-        <Filter
-          {...props}
-          variant="outlined"
-          classes={{ form: classes.filterForm }}
-        >
-          <SearchInput
-            id="search"
-            key={searchSource}
-            source={searchSource}
-            alwaysOn
-            className={classes.searchInput}
-            placeholder={searchPlaceholder || translate('ra.action.search') || 'Search...'}
-          />
-        </Filter>
-
-        {hasFilterOptions && (
-          <IconButton
-            className={clsx(
-              classes.filterButton,
-              activeCount > 0 && classes.filterButtonActive,
-            )}
-            onClick={(e) => setAnchorEl(e.currentTarget)}
-            aria-label="Filters"
+    <>
+      {/* Desktop Toolbar */}
+      <div className={classes.toolbarRoot}>
+        <div className={classes.leftGroup}>
+          <Filter
+            {...props}
+            variant="outlined"
+            classes={{ form: classes.filterForm }}
           >
-            <FilterListIcon fontSize="small" />
-            {activeCount > 0 && (
-              <span className={classes.badge}>{activeCount}</span>
-            )}
-          </IconButton>
-        )}
+            <SearchInput
+              id="search"
+              key={searchSource}
+              source={searchSource}
+              alwaysOn
+              className={classes.searchInput}
+              placeholder={searchPlaceholder || translate('ra.action.search') || 'Search...'}
+            />
+          </Filter>
+
+          {hasFilterOptions && (
+            <IconButton
+              className={clsx(
+                classes.filterButton,
+                activeCount > 0 && classes.filterButtonActive,
+              )}
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              aria-label="Filters"
+            >
+              <FilterListIcon fontSize="small" />
+              {activeCount > 0 && (
+                <span className={classes.badge}>{activeCount}</span>
+              )}
+            </IconButton>
+          )}
+        </div>
+
+        <div className={classes.rightGroup}>{children}</div>
       </div>
 
       {/* Filter Menu Dialog/Popover (Vertical List) */}
@@ -676,27 +788,6 @@ export const ModernFilterBar = ({
                 onChange={(e) =>
                   handleFilterChange(
                     'starred',
-                    e.target.checked ? true : undefined,
-                  )
-                }
-                color="primary"
-                size="small"
-              />
-            </div>
-          )}
-
-          {/* Missing Files Filter (Admins only) */}
-          {isAdmin && (
-            <div className={classes.toggleItem}>
-              <div className={classes.toggleLabel}>
-                <WarningIcon style={{ color: '#ff9800', fontSize: '1.2rem' }} />
-                <span>Missing files only</span>
-              </div>
-              <Switch
-                checked={Boolean(filterValues?.missing)}
-                onChange={(e) =>
-                  handleFilterChange(
-                    'missing',
                     e.target.checked ? true : undefined,
                   )
                 }
@@ -860,9 +951,7 @@ export const ModernFilterBar = ({
           )}
         </div>
       </Popover>
-
-      <div className={classes.rightGroup}>{children}</div>
-    </div>
+    </>
   )
 }
 

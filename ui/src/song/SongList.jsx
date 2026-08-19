@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useMediaQuery } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { useLocation, Redirect } from 'react-router-dom'
-import { useListContext, useTranslate } from 'react-admin'
+import { useListContext, useTranslate, changeListParams } from 'react-admin'
 import {
   List,
   ModernFilterBar,
@@ -57,10 +58,14 @@ const SongFilter = (props) => {
   const isNotSmall = useMediaQuery((theme) => theme.breakpoints.up('sm'))
   const { filterValues } = useListContext(props)
 
+  if (!isNotSmall) {
+    return null
+  }
+
   return (
     <ModernFilterBar resource="song" searchSource="title" {...props}>
       <ShuffleAllButton filters={filterValues} />
-      {isNotSmall && <ToggleFieldsMenu resource="song" />}
+      <ToggleFieldsMenu resource="song" />
     </ModernFilterBar>
   )
 }
@@ -114,6 +119,24 @@ const SongList = (props) => {
   const songListType = location.pathname
     .replace(/^\/song/, '')
     .replace(/^\//, '')
+
+  const dispatch = useDispatch()
+  const songParams = useSelector(
+    (state) => state.admin?.resources?.song?.list?.params,
+  )
+
+  useEffect(() => {
+    if (!location.search && !songListType) {
+      if (songParams?.filter && Object.keys(songParams.filter).length > 0) {
+        dispatch(
+          changeListParams('song', {
+            ...songParams,
+            filter: {},
+          }),
+        )
+      }
+    }
+  }, [location.pathname, location.search, songListType, songParams, dispatch])
 
   if (!location.search && songListType && songLists[songListType]) {
     return (

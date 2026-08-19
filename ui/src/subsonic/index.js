@@ -131,6 +131,14 @@ const getTopSongs = (artist, count = 50) => {
   return httpClient(url('getTopSongs', null, { artist, count }))
 }
 
+const getGenres = () => {
+  return httpClient(url('getGenres')).then((res) => {
+    const raw = res?.json?.['subsonic-response']?.genres?.genre
+    if (!raw) return []
+    return Array.isArray(raw) ? raw : [raw]
+  })
+}
+
 const streamUrl = (id, options) => {
   return baseUrl(
     url('stream', id, {
@@ -160,4 +168,5 @@ export default {
   getArtistInfo,
   getTopSongs,
   getSimilarSongs2,
+  getGenres,
 }

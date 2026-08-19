@@ -18,6 +18,7 @@ import config from '../config'
 import useStyle from './styles'
 import AudioTitle from './AudioTitle'
 import LyricsCanvas from './LyricsCanvas'
+import ArtworkCarousel from './ArtworkCarousel'
 import {
   clearQueue,
   currentPlaying,
@@ -36,7 +37,6 @@ import keyHandlers from './keyHandlers'
 import { calculateGain } from '../utils/calculateReplayGain'
 import { detectBrowserProfile, decisionService } from '../transcode'
 import DesktopPlayerResizeHandle from './DesktopPlayerResizeHandle'
-import MobilePlayerBar from './MobilePlayerBar'
 import {
   clearMediaSessionMetadata,
   setupMediaSessionActionHandlers,
@@ -278,7 +278,7 @@ export const Player = () => {
 
     return {
       ...defaultOptions,
-      mode: isPhone && !mobileExpanded ? 'mini' : 'full',
+      mode: 'full',
       audioLists: playerState.queue.map((item) => item),
       playIndex: playerState.playIndex,
       autoPlay:
@@ -296,8 +296,6 @@ export const Player = () => {
     playerState,
     defaultOptions,
     isMobilePlayer,
-    isPhone,
-    mobileExpanded,
   ])
 
   useEffect(() => {
@@ -434,6 +432,12 @@ export const Player = () => {
   )
 
   const onCoverClick = useCallback(() => {
+    if (isPhone) {
+      if (!mobileExpanded) {
+        setMobileExpanded(true)
+      }
+      return
+    }
     if (!audioInstance) return
     if (audioInstance.paused) {
       const playPromise = audioInstance.play?.()
@@ -441,7 +445,7 @@ export const Player = () => {
     } else {
       audioInstance.pause?.()
     }
-  }, [audioInstance])
+  }, [isPhone, mobileExpanded, audioInstance])
 
   const onAudioError = useCallback(
     (error, currentPlayId, audioLists, audioInfo) => {
@@ -623,301 +627,196 @@ export const Player = () => {
     }
   }, [audioInstance])
 
-  const expandTimeRef = useRef(0)
-
-  const openMobilePlayer = useCallback(() => {
-    expandTimeRef.current = Date.now()
-    setMobileExpanded(true)
-  }, [])
-
-  const dismissMobilePlayer = useCallback(() => {
-    if (Date.now() - expandTimeRef.current < 400) return
-    const el = document.querySelector('.react-jinke-music-player-mobile')
-    const transitionStr =
-      'transform 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease'
-
-    if (el) {
-      el.style.transition = transitionStr
-      el.style.transform = 'translate3d(0, 100%, 0)'
-      el.style.opacity = '0'
-    }
-
-    setTimeout(() => {
-      setMobileExpanded(false)
-      if (el) {
-        el.style.transform = ''
-        el.style.transition = ''
-        el.style.opacity = ''
-      }
-    }, 250)
-  }, [])
-
+  // Sync mobile expanded/collapsed classes
   useEffect(() => {
-    if (!visible || !isPhone || !mobileExpanded) return undefined
+    if (!isPhone || !visible) return undefined
+    const el = document.querySelector('.react-jinke-music-player-mobile')
+    if (!el) return undefined
 
-    const initialEl = document.querySelector('.react-jinke-music-player-mobile')
-    if (initialEl) {
-      initialEl.style.transform = ''
-      initialEl.style.transition = ''
-      initialEl.style.opacity = ''
+    if (mobileExpanded) {
+      el.classList.add('nd-mobile-expanded')
+      el.classList.remove('nd-mobile-collapsed')
+    } else {
+      el.classList.add('nd-mobile-collapsed')
+      el.classList.remove('nd-mobile-expanded')
     }
+    el.classList.remove('nd-mobile-dragging')
+    el.style.transform = ''
+  }, [isPhone, visible, mobileExpanded])
+
+  // Clean Mobile swipe & tap gesture handler
+  useEffect(() => {
+    if (!visible || !isPhone) return undefined
 
     let startY = 0
     let startX = 0
     let startTime = 0
-    let mobileEl = null
+    let isDragging = false
+    let wasExpanded = mobileExpanded
 
-    const getMobileEl = () => {
-      if (!mobileEl || !mobileEl.isConnected) {
-        mobileEl = document.querySelector('.react-jinke-music-player-mobile')
-      }
-      return mobileEl
-    }
+    const getMobileEl = () =>
+      document.querySelector('.react-jinke-music-player-mobile')
 
-    const handleTouchStart = (e) => {
-      if (e.touches.length !== 1) return
-      const touch = e.touches[0]
-      startY = touch.clientY
-      startX = touch.clientX
-      startTime = Date.now()
+    const handlePointerStart = (e) => {
+      const clientX = e.clientX ?? e.touches?.[0]?.clientX
+      const clientY = e.clientY ?? e.touches?.[0]?.clientY
+      if (clientX == null || clientY == null) return
 
       const target = e.target
-      // Exclude interactive buttons, toolbars, menus, and scrubbing sliders from gesture dragging
-      if (
-        target?.closest?.('button') ||
-        target?.closest?.('a') ||
-        target?.closest?.('input') ||
-        target?.closest?.('select') ||
-        target?.closest?.('[role="button"]') ||
-        target?.closest?.('.MuiButtonBase-root') ||
-        target?.closest?.('.MuiIconButton-root') ||
-        target?.closest?.('.react-jinke-music-player-mobile-operation') ||
-        target?.closest?.('.react-jinke-music-player-mobile-toggle') ||
-        target?.closest?.('.player-corner-menu') ||
-        target?.closest?.('.lyric-btn') ||
-        target?.closest?.('.loop-btn') ||
-        target?.closest?.('.play-btn') ||
-        target?.closest?.('.prev-audio') ||
-        target?.closest?.('.next-audio') ||
-        target?.closest?.('.destroy-btn') ||
-        target?.closest?.('.reload-btn') ||
-        target?.closest?.('.rc-slider') ||
-        target?.closest?.('.rc-slider-handle') ||
-        target?.closest?.('.rc-slider-rail') ||
-        target?.closest?.('.rc-slider-track') ||
-        target?.closest?.('.progress-bar-content') ||
-        target?.closest?.('.progress-bar') ||
-        target?.closest?.('input[type="range"]')
-      ) {
-        startY = -1
-        startX = -1
-        return
+      const el = getMobileEl()
+      if (!el) return
+      const container = target?.closest?.('.react-jinke-music-player-mobile')
+      if (!container) return
+
+      if (mobileExpanded) {
+        const isHeaderOrTop =
+          target?.closest?.('.react-jinke-music-player-mobile-header') ||
+          clientY < 90
+
+        if (!isHeaderOrTop) {
+          const scrollable = target?.closest?.(
+            '.audio-lists-panel-content, .music-player-lyric, .nd-lyrics-canvas',
+          )
+          if (scrollable && scrollable.scrollTop > 5) return
+
+          if (
+            target?.closest?.('.rc-slider') ||
+            target?.closest?.('input[type="range"]') ||
+            target?.closest?.('.MuiIconButton-root') ||
+            target?.closest?.('.player-corner-menu') ||
+            target?.closest?.('.lyric-btn') ||
+            target?.closest?.('.loop-btn') ||
+            target?.closest?.('.play-btn') ||
+            target?.closest?.('.prev-audio') ||
+            target?.closest?.('.next-audio')
+          ) {
+            return
+          }
+        }
+      } else {
+        if (
+          target?.closest?.('.play-btn') ||
+          target?.closest?.('.loading-icon')
+        ) {
+          return
+        }
       }
 
-      const scrollable = target?.closest?.(
-        '.audio-lists-panel-content, .music-player-lyric, .nd-lyrics-canvas',
-      )
-      if (scrollable && scrollable.scrollTop > 5) {
-        startY = -1
-        startX = -1
-      }
+      startY = clientY
+      startX = clientX
+      startTime = Date.now()
+      wasExpanded = mobileExpanded
+      isDragging = false
     }
 
-    const handleTouchMove = (e) => {
-      if (startY < 0 || e.touches.length !== 1) return
-      const touch = e.touches[0]
-      const deltaY = touch.clientY - startY
-      const deltaX = touch.clientX - startX
+    const handlePointerMove = (e) => {
+      if (startY <= 0) return
+      const clientX = e.clientX ?? e.touches?.[0]?.clientX
+      const clientY = e.clientY ?? e.touches?.[0]?.clientY
+      if (clientX == null || clientY == null) return
 
-      if (deltaY > 10 && deltaY > Math.abs(deltaX) * 0.75) {
-        const el = getMobileEl()
-        const opacityProgress = Math.min(deltaY / 380, 1)
+      const deltaY = clientY - startY
+      const deltaX = clientX - startX
+      const el = getMobileEl()
+      if (!el) return
 
-        if (el) {
-          el.style.transition = 'none'
-          el.style.transform = `translate3d(0, ${deltaY}px, 0)`
-          el.style.opacity = `${1 - opacityProgress * 0.45}`
+      if (wasExpanded) {
+        // Pulling down from full screen
+        if (deltaY > 6 && deltaY > Math.abs(deltaX) * 0.6) {
+          if (!isDragging) {
+            isDragging = true
+            el.classList.add('nd-mobile-dragging')
+          }
+          const scale = Math.max(0.88, 1 - (deltaY / window.innerHeight) * 0.18)
+          el.style.transform = `translate3d(0, ${deltaY}px, 0) scale(${scale})`
+        }
+      } else {
+        // Swiping up from mini bar
+        if (deltaY < -6 && Math.abs(deltaY) > Math.abs(deltaX) * 0.6) {
+          if (!isDragging) {
+            isDragging = true
+            el.classList.add('nd-mobile-dragging')
+          }
+          el.style.transform = `translate3d(0, ${deltaY * 0.75}px, 0)`
         }
       }
     }
 
-    const handleTouchEnd = (e) => {
-      if (startY < 0 && startX < 0) return
-      const touch = e.changedTouches?.[0]
-      if (!touch) return
-
-      const deltaY = touch.clientY - startY
-      const deltaX = touch.clientX - startX
-      const elapsed = Date.now() - startTime
-      const velocityY = deltaY / Math.max(elapsed, 1)
-      const velocityX = deltaX / Math.max(elapsed, 1)
+    const handlePointerEnd = (e) => {
+      if (startY <= 0) return
+      const clientX = e.clientX ?? e.changedTouches?.[0]?.clientX ?? startX
+      const clientY = e.clientY ?? e.changedTouches?.[0]?.clientY ?? startY
       const el = getMobileEl()
 
-      // Horizontal swipe to change songs (left = next, right = prev)
-      if (
-        (Math.abs(deltaX) >= 45 || (Math.abs(deltaX) >= 25 && Math.abs(velocityX) >= 0.25)) &&
-        Math.abs(deltaX) > Math.abs(deltaY) * 1.2
-      ) {
-        if (deltaX < 0) {
-          audioInstance?.playNext?.()
-        } else {
-          audioInstance?.playPrev?.()
-        }
-      } else if (
-        (deltaY >= 40 || (deltaY >= 20 && velocityY >= 0.22)) &&
-        deltaY > Math.abs(deltaX) * 0.75
-      ) {
-        dismissMobilePlayer()
-      } else if (el && deltaY > 0) {
-        const snapTransition =
-          'transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms ease'
-        el.style.transition = snapTransition
-        el.style.transform = 'translate3d(0, 0, 0)'
-        el.style.opacity = '1'
-      }
-
-      startY = -1
-      startX = -1
-    }
-
-    window.addEventListener('touchstart', handleTouchStart, { passive: true })
-    window.addEventListener('touchmove', handleTouchMove, { passive: true })
-    window.addEventListener('touchend', handleTouchEnd, { passive: true })
-
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart)
-      window.removeEventListener('touchmove', handleTouchMove)
-      window.removeEventListener('touchend', handleTouchEnd)
-      if (initialEl) {
-        initialEl.style.transform = ''
-        initialEl.style.transition = ''
-        initialEl.style.opacity = ''
-      }
-    }
-  }, [visible, isPhone, mobileExpanded, dismissMobilePlayer, audioInstance])
-
-  // Artwork swipe gesture with smooth animated transitions across mobile and desktop
-  useEffect(() => {
-    if (!visible || !audioInstance || lyricsOpen) return undefined
-
-    let startX = 0
-    let startY = 0
-    let startTime = 0
-    let isArtworkTouch = false
-    let activeCoverEl = null
-
-    const getCoverElement = (target) => {
-      return (
-        target?.closest?.('.react-jinke-music-player-mobile-cover') ||
-        target?.closest?.('.img-content') ||
-        document.querySelector('.react-jinke-music-player-mobile-cover') ||
-        document.querySelector('.music-player-panel .panel-content .img-content')
-      )
-    }
-
-    const onTouchStart = (e) => {
-      if (e.touches.length !== 1) return
-      const touch = e.touches[0]
-      const target = e.target
-      const isCover =
-        target?.closest?.('.react-jinke-music-player-mobile-cover') ||
-        target?.closest?.('.img-content') ||
-        target?.closest?.('.img-rotate')
-
-      if (isCover) {
-        startX = touch.clientX
-        startY = touch.clientY
-        startTime = Date.now()
-        isArtworkTouch = true
-        activeCoverEl = getCoverElement(target)
-      } else {
-        isArtworkTouch = false
-        activeCoverEl = null
-      }
-    }
-
-    const onTouchMove = (e) => {
-      if (!isArtworkTouch || !activeCoverEl || e.touches.length !== 1) return
-      const touch = e.touches[0]
-      const deltaX = touch.clientX - startX
-      const deltaY = touch.clientY - startY
-
-      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 8) {
-        const progress = Math.min(Math.abs(deltaX) / 360, 0.4)
-        activeCoverEl.style.transition = 'none'
-        activeCoverEl.style.transform = `translate3d(${deltaX * 0.85}px, 0, 0) scale(${1 - progress * 0.15}) rotate(${deltaX * 0.02}deg)`
-        activeCoverEl.style.opacity = `${1 - progress}`
-      }
-    }
-
-    const onTouchEnd = (e) => {
-      if (!isArtworkTouch || !activeCoverEl) return
-      const touch = e.changedTouches?.[0]
-      if (!touch) return
-
-      const deltaX = touch.clientX - startX
-      const deltaY = touch.clientY - startY
+      const deltaY = clientY - startY
+      const deltaX = clientX - startX
       const elapsed = Date.now() - startTime
-      const velocityX = deltaX / Math.max(elapsed, 1)
+      const velocityY = deltaY / Math.max(elapsed, 1)
 
-      const el = activeCoverEl
-      const passed =
-        (Math.abs(deltaX) >= 45 || (Math.abs(deltaX) >= 20 && Math.abs(velocityX) >= 0.22)) &&
-        Math.abs(deltaX) > Math.abs(deltaY) * 1.1
-
-      if (passed) {
-        const direction = deltaX > 0 ? 1 : -1
-        el.style.transition =
-          'transform 200ms cubic-bezier(0.2, 0.8, 0.3, 1), opacity 180ms ease'
-        el.style.transform = `translate3d(${direction * 110}%, 0, 0) scale(0.9) rotate(${direction * 4}deg)`
-        el.style.opacity = '0'
-
-        setTimeout(() => {
-          if (direction < 0) {
-            audioInstance.playNext?.()
-          } else {
-            audioInstance.playPrev?.()
-          }
-
-          el.style.transition = 'none'
-          el.style.transform = `translate3d(${-direction * 90}%, 0, 0) scale(0.92) rotate(${-direction * 3}deg)`
-          el.style.opacity = '0'
-
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              el.style.transition =
-                'transform 280ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms ease'
-              el.style.transform = 'translate3d(0, 0, 0) scale(1) rotate(0deg)'
-              el.style.opacity = '1'
-            })
-          })
-        }, 190)
-      } else {
-        el.style.transition =
-          'transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease'
-        el.style.transform = 'translate3d(0, 0, 0) scale(1) rotate(0deg)'
-        el.style.opacity = '1'
+      if (el) {
+        el.classList.remove('nd-mobile-dragging')
+        el.style.transform = ''
       }
 
-      isArtworkTouch = false
-      activeCoverEl = null
+      if (isDragging) {
+        if (wasExpanded) {
+          if (deltaY > 50 || velocityY > 0.25) {
+            setMobileExpanded(false)
+          }
+        } else {
+          if (deltaY < -35 || velocityY < -0.25) {
+            setMobileExpanded(true)
+          }
+        }
+      } else if (Math.abs(deltaY) < 12 && Math.abs(deltaX) < 12) {
+        // Clean tap/click toggle
+        const target = e.target
+        if (!wasExpanded) {
+          const isPlayBtn =
+            target?.closest?.('.play-btn') ||
+            target?.closest?.('.loading-icon')
+          if (!isPlayBtn) {
+            setMobileExpanded(true)
+          }
+        } else {
+          const isHeaderClick =
+            target?.closest?.('.react-jinke-music-player-mobile-header') ||
+            target?.closest?.('.react-jinke-music-player-mobile-header-right')
+          const isTopArea = clientY < 80
+          if (isHeaderClick || isTopArea) {
+            setMobileExpanded(false)
+          }
+        }
+      }
+
+      startY = 0
+      startX = 0
+      isDragging = false
     }
 
-    window.addEventListener('touchstart', onTouchStart, { passive: true })
-    window.addEventListener('touchmove', onTouchMove, { passive: true })
-    window.addEventListener('touchend', onTouchEnd, { passive: true })
+    window.addEventListener('touchstart', handlePointerStart, { passive: true })
+    window.addEventListener('touchmove', handlePointerMove, { passive: true })
+    window.addEventListener('touchend', handlePointerEnd, { passive: true })
+
+    window.addEventListener('pointerdown', handlePointerStart, { passive: true })
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
+    window.addEventListener('pointerup', handlePointerEnd, { passive: true })
 
     return () => {
-      window.removeEventListener('touchstart', onTouchStart)
-      window.removeEventListener('touchmove', onTouchMove)
-      window.removeEventListener('touchend', onTouchEnd)
-      if (activeCoverEl) {
-        activeCoverEl.style.transform = ''
-        activeCoverEl.style.transition = ''
-        activeCoverEl.style.opacity = ''
+      window.removeEventListener('touchstart', handlePointerStart)
+      window.removeEventListener('touchmove', handlePointerMove)
+      window.removeEventListener('touchend', handlePointerEnd)
+      window.removeEventListener('pointerdown', handlePointerStart)
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerEnd)
+
+      const cleanupEl = getMobileEl()
+      if (cleanupEl) {
+        cleanupEl.classList.remove('nd-mobile-dragging')
+        cleanupEl.style.transform = ''
       }
     }
-  }, [visible, audioInstance, lyricsOpen])
+  }, [visible, isPhone, mobileExpanded])
 
   // Track target cover container element dynamically
   useEffect(() => {
@@ -940,7 +839,7 @@ export const Player = () => {
     updateCoverTarget()
     const timer = setInterval(updateCoverTarget, 400)
     return () => clearInterval(timer)
-  }, [visible, isPhone, mobileExpanded])
+  }, [visible, isPhone])
 
   // Listen to toolbar lyrics button clicks/touches to toggle lyrics
   useEffect(() => {
@@ -989,15 +888,6 @@ export const Player = () => {
       <>
         <div className={classes.ambientBackdrop} aria-hidden="true" />
         <DesktopPlayerResizeHandle visible={visible && isDesktop} />
-        {visible && isPhone && !mobileExpanded && (
-          <MobilePlayerBar
-            audio={audioInstance}
-            cover={mobileTrack.cover}
-            title={mobileTrack.name || mobileTrack.song?.title}
-            artist={mobileTrack.singer || mobileTrack.song?.artist}
-            onOpen={openMobilePlayer}
-          />
-        )}
         <ReactJkMusicPlayer
           {...options}
           className={classes.player}
@@ -1026,6 +916,18 @@ export const Player = () => {
                 ''
               }
               onClose={() => setLyricsOpen(false)}
+            />,
+            coverTarget,
+          )}
+        {!lyricsOpen &&
+          coverTarget &&
+          createPortal(
+            <ArtworkCarousel
+              queue={playerState.queue}
+              playIndex={playerState.playIndex ?? playerState.savedPlayIndex ?? 0}
+              currentTrack={playerState.current || mobileTrack}
+              playMode={playerState.mode}
+              audioInstance={audioInstance}
             />,
             coverTarget,
           )}

@@ -53,6 +53,19 @@ const AudioTitle = React.memo(({ audioInfo, gainInfo, isMobile }) => {
       ? `/playlist/${song.playlistId}/show`
       : `/album/${song.albumId}/show`
 
+  if (isMobile) {
+    return (
+      <div className={className} ref={dragSongRef}>
+        <span>
+          <span className={clsx(classes.songTitle, 'songTitle')}>{title}</span>
+        </span>
+        <span className={classes.songInfo}>
+          <span className={'songArtist'}>{song.artist}</span>
+        </span>
+      </div>
+    )
+  }
+
   return (
     <Link to={linkTo} className={className} ref={dragSongRef}>
       <span>

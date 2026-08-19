@@ -3,11 +3,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import MusicNoteOutlinedIcon from '@material-ui/icons/MusicNoteOutlined'
 import MusicNoteIcon from '@material-ui/icons/MusicNote'
+import PersonOutlineIcon from '@material-ui/icons/PersonOutline'
+import PersonIcon from '@material-ui/icons/Person'
 import CategoryOutlinedIcon from '@material-ui/icons/CategoryOutlined'
 import CategoryIcon from '@material-ui/icons/Category'
-import VideoLibraryOutlinedIcon from '@material-ui/icons/VideoLibraryOutlined'
-import VideoLibraryIcon from '@material-ui/icons/VideoLibrary'
-import RepeatIcon from '@material-ui/icons/Repeat'
+import WbSunnyOutlinedIcon from '@material-ui/icons/WbSunnyOutlined'
+import WbSunnyIcon from '@material-ui/icons/WbSunny'
 import clsx from 'clsx'
 import { useTranslate } from 'react-admin'
 
@@ -21,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 60,
+    height: 72,
     paddingBottom: 'env(safe-area-inset-bottom)',
     boxSizing: 'content-box',
     backgroundColor: '#181820',
@@ -42,7 +43,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: 3,
     textDecoration: 'none',
     color: 'rgba(255, 255, 255, 0.5)',
     padding: '4px 2px',
@@ -69,21 +70,21 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 44,
-    height: 28,
-    borderRadius: 14,
+    width: 52,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'transparent',
     transition:
       'background-color 0.22s ease, color 0.22s ease',
     '& svg': {
-      fontSize: 21,
+      fontSize: 26,
     },
   },
   label: {
-    fontSize: '0.66rem',
+    fontSize: '0.74rem',
     fontWeight: 500,
     letterSpacing: '0.01em',
-    lineHeight: 1.1,
+    lineHeight: 1.15,
     opacity: 0.75,
     width: '100%',
     maxWidth: '100%',
@@ -108,6 +109,15 @@ const navItems = [
     isActive: (pathname) => pathname === '/song' || pathname === '/song/',
   },
   {
+    path: '/artist',
+    labelKey: 'resources.artist.name',
+    defaultLabel: 'Artists',
+    smartCount: 2,
+    Icon: PersonOutlineIcon,
+    ActiveIcon: PersonIcon,
+    isActive: (pathname) => pathname.startsWith('/artist'),
+  },
+  {
     path: '/genres',
     labelKey: 'resources.genre.name',
     defaultLabel: 'Genres',
@@ -118,20 +128,13 @@ const navItems = [
       pathname.startsWith('/genres') || pathname.startsWith('/categories'),
   },
   {
-    path: '/song/recentlyPlayed',
-    labelKey: 'resources.album.lists.recentlyPlayed',
-    defaultLabel: 'Recently',
-    Icon: VideoLibraryOutlinedIcon,
-    ActiveIcon: VideoLibraryIcon,
-    isActive: (pathname) => pathname === '/song/recentlyPlayed',
-  },
-  {
-    path: '/song/mostPlayed',
-    labelKey: 'resources.album.lists.mostPlayed',
-    defaultLabel: 'Most',
-    Icon: RepeatIcon,
-    ActiveIcon: RepeatIcon,
-    isActive: (pathname) => pathname === '/song/mostPlayed',
+    path: '/moods',
+    labelKey: 'menu.moods',
+    defaultLabel: 'Moods',
+    smartCount: 2,
+    Icon: WbSunnyOutlinedIcon,
+    ActiveIcon: WbSunnyIcon,
+    isActive: (pathname) => pathname.startsWith('/moods'),
   },
 ]
 
