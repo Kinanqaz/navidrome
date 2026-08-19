@@ -34,6 +34,17 @@ const setupHandlers = (stream, dispatchFn) => {
 }
 
 const scheduleReconnect = (dispatchFn) => {
+  if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+    const handleVisible = () => {
+      if (document.visibilityState === 'visible') {
+        document.removeEventListener('visibilitychange', handleVisible)
+        connect(dispatchFn)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisible)
+    return
+  }
+
   if (!reconnectTimer) {
     reconnectTimer = setTimeout(() => {
       reconnectTimer = null

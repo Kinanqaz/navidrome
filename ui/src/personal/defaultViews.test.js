@@ -26,7 +26,6 @@ describe('defaultViews', () => {
         { id: 'song', name: 'resources.song.name:2' },
         { id: 'album', name: 'resources.album.name:2' },
         { id: 'playlist', name: 'resources.playlist.name:2' },
-        { id: 'radio', name: 'resources.radio.name:2' },
       ]),
     )
   })
@@ -36,7 +35,6 @@ describe('defaultViews', () => {
     expect(isResourceDefaultView('song')).toBe(true)
     expect(isResourceDefaultView('album')).toBe(true)
     expect(isResourceDefaultView('playlist')).toBe(true)
-    expect(isResourceDefaultView('radio')).toBe(true)
     expect(isResourceDefaultView('recentlyAdded')).toBe(false)
   })
 

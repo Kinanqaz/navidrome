@@ -20,10 +20,6 @@ vi.mock('../config', () => ({
   },
 }))
 
-vi.mock('react-dnd', () => ({
-  useDrop: () => [{}, () => {}],
-}))
-
 vi.mock('react-router-dom', () => ({
   useHistory: () => ({ push: vi.fn() }),
 }))

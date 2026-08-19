@@ -6,8 +6,6 @@ import PlayArrowIcon from '@material-ui/icons/PlayArrow'
 import { BatchPlayButton } from './index'
 import { AddToPlaylistButton } from './AddToPlaylistButton'
 import { makeStyles } from '@material-ui/core/styles'
-import { BatchShareButton } from './BatchShareButton'
-import config from '../config'
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -44,9 +42,6 @@ export const SongBulkActions = (props) => {
         icon={<RiPlayListAddFill />}
         className={classes.button}
       />
-      {config.enableSharing && (
-        <BatchShareButton {...props} className={classes.button} />
-      )}
       <AddToPlaylistButton {...props} className={classes.button} />
     </Fragment>
   )

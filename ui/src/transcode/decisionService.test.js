@@ -193,6 +193,34 @@ describe('decisionService', () => {
     })
   })
 
+  describe('invalidate', () => {
+    it('invalidates a single song from cache', async () => {
+      await service.getDecision('song-1', fakeProfile)
+      await service.getDecision('song-2', fakeProfile)
+      expect(mockFetchFn).toHaveBeenCalledTimes(2)
+
+      service.invalidate('song-1')
+
+      // song-2 is still cached
+      await service.getDecision('song-2', fakeProfile)
+      expect(mockFetchFn).toHaveBeenCalledTimes(2)
+
+      // song-1 is re-fetched
+      await service.getDecision('song-1', fakeProfile)
+      expect(mockFetchFn).toHaveBeenCalledTimes(3)
+    })
+
+    it('clears all if called with no arguments', async () => {
+      await service.getDecision('song-1', fakeProfile)
+      expect(mockFetchFn).toHaveBeenCalledTimes(1)
+
+      service.invalidate()
+
+      await service.getDecision('song-1', fakeProfile)
+      expect(mockFetchFn).toHaveBeenCalledTimes(2)
+    })
+  })
+
   describe('invalidateAll', () => {
     it('clears cache so next getDecision re-fetches', async () => {
       await service.getDecision('song-1', fakeProfile)

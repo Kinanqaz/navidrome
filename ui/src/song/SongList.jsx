@@ -74,10 +74,15 @@ const SongListTitle = ({ songListType }) => {
   const translate = useTranslate()
   let title = translate('resources.song.name', { smart_count: 2 })
   if (songListType && songListType !== 'all') {
-    const listTitle = translate(`resources.album.lists.${songListType}`, {
-      smart_count: 2,
-      _: songListType,
-    })
+    const listTitle =
+      translate(`resources.song.lists.${songListType}`, {
+        smart_count: 2,
+        _: '',
+      }) ||
+      translate(`resources.album.lists.${songListType}`, {
+        smart_count: 2,
+        _: songListType,
+      })
     title = `${title} - ${listTitle}`
   }
   return <Title subTitle={title} args={{ smart_count: 2 }} />

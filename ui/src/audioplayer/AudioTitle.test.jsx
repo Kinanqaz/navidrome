@@ -20,10 +20,6 @@ vi.mock('react-router-dom', () => ({
   )),
 }))
 
-vi.mock('react-dnd', () => ({
-  useDrag: vi.fn(() => [null, () => {}]),
-}))
-
 describe('<AudioTitle />', () => {
   const baseSong = {
     id: 'song-1',

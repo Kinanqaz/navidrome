@@ -107,6 +107,7 @@ export const SongSimpleList = ({
   onToggleItem,
   selectedIds,
   total,
+  syncWithLocation,
   ...rest
 }) => {
   const dispatch = useDispatch()

@@ -12,14 +12,12 @@ import { Link } from 'react-router-dom'
 import { linkToRecord, useListContext, Loading } from 'react-admin'
 import { withContentRect } from 'react-measure'
 import { useRollChanged } from './useRollChanged'
-import { useDrag } from 'react-dnd'
 import {
   AlbumContextMenu,
   PlayButton,
   ArtistLinkField,
   OverflowTooltip,
 } from '../common'
-import { DraggableTypes } from '../consts'
 import clsx from 'clsx'
 import { AlbumDatesField } from './AlbumDatesField.jsx'
 import { Artwork } from '../common/Artwork'
@@ -131,25 +129,14 @@ const Cover = withContentRect('bounds')(({
   // Force height to be the same as the width determined by the GridList
   // noinspection JSSuspiciousNameCombination
   const classes = useCoverStyles({ height: contentRect.bounds.width })
-  const [, dragAlbumRef] = useDrag(
-    () => ({
-      type: DraggableTypes.ALBUM,
-      item: { albumIds: [record.id] },
-      options: { dropEffect: 'copy' },
-    }),
-    [record],
-  )
-
   return (
     <div ref={measureRef} className={classes.coverContainer}>
-      <div ref={dragAlbumRef}>
-        <Artwork
-          record={record}
-          square
-          className={classes.cover}
-          title={record.name}
-        />
-      </div>
+      <Artwork
+        record={record}
+        square
+        className={classes.cover}
+        title={record.name}
+      />
     </div>
   )
 })

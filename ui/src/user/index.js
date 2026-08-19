@@ -1,6 +1,8 @@
-import UserList from './UserList'
-import UserEdit from './UserEdit'
-import UserCreate from './UserCreate'
+import { lazyLoad } from '../common'
+
+const UserList = lazyLoad(() => import('./UserList'))
+const UserEdit = lazyLoad(() => import('./UserEdit'))
+const UserCreate = lazyLoad(() => import('./UserCreate'))
 
 export default {
   list: UserList,

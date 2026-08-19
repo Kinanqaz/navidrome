@@ -6,7 +6,6 @@ import {
   ThemeProvider as MuiThemeProvider,
   createTheme,
 } from '@material-ui/core/styles'
-import { HotKeys } from 'react-hotkeys'
 import Menu from './Menu'
 import AppBar from './AppBar'
 import Notification from './Notification'
@@ -18,8 +17,6 @@ import { desktopPlayerWidth } from '../audioplayer/styles'
 const useStyles = makeStyles((theme) => ({
   root: {
     width: '100%',
-    maxWidth: '100vw',
-    overflowX: 'hidden',
     boxSizing: 'border-box',
     paddingBottom: (props) =>
       props.addPadding
@@ -43,25 +40,28 @@ const useStyles = makeStyles((theme) => ({
           marginTop: '0 !important',
           paddingTop: '0 !important',
         },
-      '& .list-page, & .RaList-root, & .RaList-main, & .RaList-content, & .MuiCard-root':
+      '& [class*="RaLayout-content"]': {
+        marginTop: '0 !important',
+        paddingTop: '0 !important',
+      },
+      '& .list-page, & [class*="RaList-root"], & [class*="RaList-main"], & [class*="RaList-content"], & .MuiCard-root':
         {
           marginTop: '0 !important',
           paddingTop: '0 !important',
           marginBottom: '0 !important',
           boxShadow: 'none !important',
         },
-      '& .RaList-header, & div[class*="RaList-header"]': {
-        display: 'none !important',
-        minHeight: '0 !important',
-        height: '0 !important',
-        margin: '0 !important',
-        padding: '0 !important',
-      },
+      '& .RaList-header, & div[class*="RaList-header"], & [class*="RaList-header"], & [class*="RaList-actions"], & [class*="RaTopToolbar-root"]':
+        {
+          display: 'none !important',
+          minHeight: '0 !important',
+          height: '0 !important',
+          margin: '0 !important',
+          padding: '0 !important',
+        },
     },
     '& #main-content': {
       width: '100%',
-      maxWidth: '100vw',
-      overflowX: 'hidden',
       boxSizing: 'border-box',
       paddingLeft: theme.spacing(3),
       paddingRight: theme.spacing(3),
@@ -72,18 +72,16 @@ const useStyles = makeStyles((theme) => ({
         duration: theme.transitions.duration.shorter,
       }),
       [theme.breakpoints.down('sm')]: {
-        paddingTop: 'calc(16px + env(safe-area-inset-top)) !important',
+        paddingTop: '0 !important',
         paddingLeft: '16px !important',
         paddingRight: '16px !important',
+        paddingBottom: theme.spacing(2),
       },
       [theme.breakpoints.down('xs')]: {
         paddingLeft: '16px !important',
         paddingRight: '16px !important',
-        paddingTop: 'calc(16px + env(safe-area-inset-top)) !important',
-        paddingBottom: (props) =>
-          props.addPadding
-            ? 'calc(186px + env(safe-area-inset-bottom))'
-            : 'calc(86px + env(safe-area-inset-bottom))',
+        paddingTop: '0 !important',
+        paddingBottom: theme.spacing(2),
       },
       '& thead.MuiTableHead-root, & .RaDatagrid-thead, & .RaDatagrid-headerRow': {
         [theme.breakpoints.down('xs')]: {
@@ -202,6 +200,32 @@ const useStyles = makeStyles((theme) => ({
       },
     },
   },
+  appFrame: {
+    [theme.breakpoints.down('sm')]: {
+      marginTop: '0 !important',
+      paddingTop: '0 !important',
+    },
+  },
+  contentWithSidebar: {
+    [theme.breakpoints.down('sm')]: {
+      marginTop: '0 !important',
+      paddingTop: '0 !important',
+    },
+  },
+  content: {
+    [theme.breakpoints.down('sm')]: {
+      marginTop: '0 !important',
+      paddingTop: '0 !important',
+      padding: '0 !important',
+    },
+  },
+  children: {
+    [theme.breakpoints.down('sm')]: {
+      marginTop: '0 !important',
+      paddingTop: '0 !important',
+      padding: '0 !important',
+    },
+  },
 }))
 
 const Layout = (props) => {
@@ -212,15 +236,17 @@ const Layout = (props) => {
   const dispatch = useDispatch()
   useSearchRefocus()
 
-  const keyHandlers = {
-    TOGGLE_MENU: useCallback(() => dispatch(toggleSidebar()), [dispatch]),
-  }
-
   return (
-    <HotKeys handlers={keyHandlers}>
+    <>
       <RALayout
         {...props}
         className={classes.root}
+        classes={{
+          appFrame: classes.appFrame,
+          contentWithSidebar: classes.contentWithSidebar,
+          content: classes.content,
+          children: classes.children,
+        }}
         menu={Menu}
         appBar={AppBar}
         theme={themeConfig}
@@ -229,7 +255,7 @@ const Layout = (props) => {
       <MuiThemeProvider theme={muiTheme}>
         <MobileBottomNav />
       </MuiThemeProvider>
-    </HotKeys>
+    </>
   )
 }
 

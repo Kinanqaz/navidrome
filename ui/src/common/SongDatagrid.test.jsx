@@ -10,9 +10,17 @@ vi.mock('../subsonic', () => ({
 
 vi.mock('react-redux', () => ({ useDispatch: () => vi.fn() }))
 
-vi.mock('../common', () => ({ AlbumContextMenu: () => null }))
-
-vi.mock('react-dnd', () => ({ useDrag: () => [{}, vi.fn()] }))
+vi.mock('../common', () => ({
+  AlbumContextMenu: () => null,
+  ImageViewerDialog: ({ open, onClose }) =>
+    open ? (
+      <div data-testid="image-viewer-dialog">
+        <button aria-label="close image" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    ) : null,
+}))
 
 const record = {
   id: 'song-1',
@@ -36,7 +44,7 @@ const renderRow = (onClick) =>
 
 const openLightbox = () => {
   fireEvent.click(document.querySelector('img'))
-  expect(document.querySelector('.ril__closeButton')).toBeTruthy()
+  expect(screen.getByTestId('image-viewer-dialog')).toBeTruthy()
 }
 
 describe('DiscSubtitleRow', () => {
@@ -60,15 +68,7 @@ describe('DiscSubtitleRow', () => {
     const onClick = vi.fn()
     renderRow(onClick)
     openLightbox()
-    fireEvent.click(document.querySelector('.ril__closeButton'))
-    expect(onClick).not.toHaveBeenCalled()
-  })
-
-  it('does not play the disc when clicking the lightbox backdrop', () => {
-    const onClick = vi.fn()
-    renderRow(onClick)
-    openLightbox()
-    fireEvent.click(document.querySelector('.ril__inner'))
+    fireEvent.click(screen.getByLabelText('close image'))
     expect(onClick).not.toHaveBeenCalled()
   })
 })

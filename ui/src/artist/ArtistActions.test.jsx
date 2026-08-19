@@ -5,7 +5,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ArtistActions from './ArtistActions'
 import subsonic from '../subsonic'
 import {
-  openShareMenu,
   openDownloadMenu,
   DOWNLOAD_MENU_ARTIST,
 } from '../actions'
@@ -244,22 +243,6 @@ describe('ArtistActions', () => {
     })
   })
 
-  describe('Share action', () => {
-    it('shows the share button and dispatches openShareMenu when clicked', () => {
-      renderArtistActions()
-      fireEvent.click(screen.getByText('ra.action.share'))
-      expect(mockDispatch).toHaveBeenCalledWith(
-        openShareMenu(['ar1'], 'artist', 'Artist'),
-      )
-    })
-
-    it('hides the share button when sharing is disabled', () => {
-      mockConfig.enableSharing = false
-      renderArtistActions()
-      expect(screen.queryByText('ra.action.share')).not.toBeInTheDocument()
-    })
-  })
-
   describe('Download action', () => {
     it('shows the download button with album-artist size and dispatches openDownloadMenu when clicked', () => {
       renderArtistActions()
@@ -278,15 +261,13 @@ describe('ArtistActions', () => {
   })
 
   describe('Album-artist gating', () => {
-    it('hides Share and Download for artists with no album-artist content', () => {
+    it('hides Download for artists with no album-artist content', () => {
       renderArtistActions({ id: 'ar1', name: 'Artist', stats: {} })
-      expect(screen.queryByText('ra.action.share')).not.toBeInTheDocument()
       expect(screen.queryByText(/ra\.action\.download/)).not.toBeInTheDocument()
     })
 
-    it('hides Share and Download for a missing artist', () => {
+    it('hides Download for a missing artist', () => {
       renderArtistActions({ ...defaultRecord, missing: true })
-      expect(screen.queryByText('ra.action.share')).not.toBeInTheDocument()
       expect(screen.queryByText(/ra\.action\.download/)).not.toBeInTheDocument()
     })
   })

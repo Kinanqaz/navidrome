@@ -5,8 +5,6 @@ import clsx from 'clsx'
 import { QualityInfo } from '../common'
 import { decisionService } from '../transcode'
 import useStyle from './styles'
-import { useDrag } from 'react-dnd'
-import { DraggableTypes } from '../consts'
 
 const AudioTitle = React.memo(({ audioInfo, gainInfo, isMobile }) => {
   const classes = useStyle()
@@ -14,14 +12,6 @@ const AudioTitle = React.memo(({ audioInfo, gainInfo, isMobile }) => {
   const isDesktop = useMediaQuery('(min-width:810px)')
 
   const song = audioInfo.song
-  const [, dragSongRef] = useDrag(
-    () => ({
-      type: DraggableTypes.SONG,
-      item: { ids: [song?.id] },
-      options: { dropEffect: 'copy' },
-    }),
-    [song],
-  )
 
   if (!song) {
     return ''
@@ -47,15 +37,13 @@ const AudioTitle = React.memo(({ audioInfo, gainInfo, isMobile }) => {
   const subtitle = song.tags?.['subtitle']
   const title = song.title + (subtitle ? ` (${subtitle})` : '')
 
-  const linkTo = audioInfo.isRadio
-    ? `/radio/${audioInfo.trackId}/show`
-    : song.playlistId
-      ? `/playlist/${song.playlistId}/show`
-      : `/album/${song.albumId}/show`
+  const linkTo = song.playlistId
+    ? `/playlist/${song.playlistId}/show`
+    : `/album/${song.albumId}/show`
 
   if (isMobile) {
     return (
-      <div className={className} ref={dragSongRef}>
+      <div className={className}>
         <span>
           <span className={clsx(classes.songTitle, 'songTitle')}>{title}</span>
         </span>
@@ -67,7 +55,7 @@ const AudioTitle = React.memo(({ audioInfo, gainInfo, isMobile }) => {
   }
 
   return (
-    <Link to={linkTo} className={className} ref={dragSongRef}>
+    <Link to={linkTo} className={className}>
       <span>
         <span className={clsx(classes.songTitle, 'songTitle')}>{title}</span>
         {isDesktop && (

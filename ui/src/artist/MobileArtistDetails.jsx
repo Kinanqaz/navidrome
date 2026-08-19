@@ -3,8 +3,7 @@ import { Typography, Collapse } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import Card from '@material-ui/core/Card'
 import config from '../config'
-import { LoveButton, RatingField, ImageUploadOverlay } from '../common'
-import Lightbox from 'react-image-lightbox'
+import { LoveButton, RatingField, ImageUploadOverlay, ImageViewerDialog } from '../common'
 import subsonic from '../subsonic'
 import { SafeHTML } from '../common/SafeHTML'
 import { Artwork } from '../common/Artwork'
@@ -141,12 +140,11 @@ const MobileArtistDetails = ({ biography, record }) => {
         </Collapse>
       </div>
       {isLightboxOpen && (
-        <Lightbox
-          imagePadding={50}
-          animationDuration={200}
-          imageTitle={record.name}
-          mainSrc={img}
-          onCloseRequest={() => setLightboxOpen(false)}
+        <ImageViewerDialog
+          title={record.name}
+          src={img}
+          open={isLightboxOpen}
+          onClose={() => setLightboxOpen(false)}
         />
       )}
     </>

@@ -127,6 +127,124 @@ const useCurrentTheme = () => {
             },
           },
         },
+        RaLayout: {
+          ...theme.overrides?.RaLayout,
+          content: {
+            padding: 0,
+            paddingTop: 0,
+            '@media (max-width: 959.95px)': {
+              padding: '0 !important',
+              paddingTop: '0 !important',
+              marginTop: '0 !important',
+            },
+            ...theme.overrides?.RaLayout?.content,
+          },
+          appFrame: {
+            '@media (max-width: 959.95px)': {
+              paddingTop: '0 !important',
+              marginTop: '0 !important',
+            },
+            ...theme.overrides?.RaLayout?.appFrame,
+          },
+          contentWithSidebar: {
+            '@media (max-width: 959.95px)': {
+              paddingTop: '0 !important',
+              marginTop: '0 !important',
+            },
+            ...theme.overrides?.RaLayout?.contentWithSidebar,
+          },
+          children: {
+            '@media (max-width: 959.95px)': {
+              paddingTop: '0 !important',
+              marginTop: '0 !important',
+            },
+            ...theme.overrides?.RaLayout?.children,
+          },
+        },
+        RaList: {
+          ...theme.overrides?.RaList,
+          root: {
+            '@media (max-width: 959.95px)': {
+              marginTop: '0 !important',
+              paddingTop: '0 !important',
+              boxShadow: 'none !important',
+            },
+            ...theme.overrides?.RaList?.root,
+          },
+          main: {
+            backgroundColor: 'transparent',
+            '@media (max-width: 959.95px)': {
+              marginTop: '0 !important',
+              paddingTop: '0 !important',
+              backgroundColor: 'transparent !important',
+            },
+            ...theme.overrides?.RaList?.main,
+          },
+          content: {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            '@media (max-width: 959.95px)': {
+              marginTop: '0 !important',
+              paddingTop: '0 !important',
+              marginBottom: '0 !important',
+              boxShadow: 'none !important',
+              backgroundColor: 'transparent !important',
+            },
+            ...theme.overrides?.RaList?.content,
+          },
+          actions: {
+            '@media (max-width: 959.95px)': {
+              display: 'none !important',
+              minHeight: '0 !important',
+              height: '0 !important',
+              margin: '0 !important',
+              padding: '0 !important',
+            },
+            ...theme.overrides?.RaList?.actions,
+          },
+        },
+        RaTopToolbar: {
+          ...theme.overrides?.RaTopToolbar,
+          root: {
+            '@media (max-width: 959.95px)': {
+              display: 'none !important',
+              minHeight: '0 !important',
+              height: '0 !important',
+              margin: '0 !important',
+              padding: '0 !important',
+            },
+            ...theme.overrides?.RaTopToolbar?.root,
+          },
+        },
+        RaFilterForm: {
+          ...theme.overrides?.RaFilterForm,
+          root: {
+            display: 'block !important',
+            width: '100% !important',
+            margin: '0 !important',
+            padding: '0 !important',
+            ...theme.overrides?.RaFilterForm?.root,
+          },
+          form: {
+            display: 'block !important',
+            width: '100% !important',
+            margin: '0 !important',
+            padding: '0 !important',
+            ...theme.overrides?.RaFilterForm?.form,
+          },
+        },
+        MuiCard: {
+          ...theme.overrides?.MuiCard,
+          root: {
+            ...theme.overrides?.MuiCard?.root,
+            '@media (max-width: 959.95px)': {
+              marginTop: '0 !important',
+              paddingTop: '0 !important',
+              marginBottom: '0 !important',
+              boxShadow: 'none !important',
+            },
+          },
+        },
       },
       props: { ...theme.props, MuiUseMediaQuery: { noSsr: true } },
     }

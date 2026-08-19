@@ -1,10 +1,12 @@
-import { MdLibraryMusic } from 'react-icons/md'
-import LibraryList from './LibraryList'
-import LibraryEdit from './LibraryEdit'
-import LibraryCreate from './LibraryCreate'
+import LibraryMusicIcon from '@material-ui/icons/LibraryMusic'
+import { lazyLoad } from '../common'
+
+const LibraryList = lazyLoad(() => import('./LibraryList'))
+const LibraryEdit = lazyLoad(() => import('./LibraryEdit'))
+const LibraryCreate = lazyLoad(() => import('./LibraryCreate'))
 
 export default {
-  icon: MdLibraryMusic,
+  icon: LibraryMusicIcon,
   list: LibraryList,
   edit: LibraryEdit,
   create: LibraryCreate,

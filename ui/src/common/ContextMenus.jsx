@@ -17,7 +17,6 @@ import {
   openExtendedInfoDialog,
   DOWNLOAD_MENU_ALBUM,
   DOWNLOAD_MENU_ARTIST,
-  openShareMenu,
 } from '../actions'
 import { LoveButton } from './LoveButton'
 import config from '../config'
@@ -59,7 +58,6 @@ const ContextMenu = ({
   color,
   className,
   songQueryParams,
-  hideShare,
   hideInfo,
 }) => {
   const classes = useStyles({ color })
@@ -91,15 +89,6 @@ const ContextMenu = ({
       label: translate('resources.album.actions.addToPlaylist'),
       action: (data, ids) => dispatch(openAddToPlaylist({ selectedIds: ids })),
     },
-    ...(!hideShare && {
-      share: {
-        enabled: config.enableSharing && (!isArtist || downloadSize),
-        needData: false,
-        label: translate('ra.action.share'),
-        action: (record) =>
-          dispatch(openShareMenu([record.id], resource, record.name)),
-      },
-    }),
     download: {
       enabled: config.enableDownloads && downloadSize,
       needData: false,

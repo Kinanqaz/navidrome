@@ -65,6 +65,7 @@ export const SimpleList = ({
   selectedIds,
   tertiaryText,
   total,
+  syncWithLocation,
   ...rest
 }) => {
   const classes = useStyles({ classes: classesOverride })

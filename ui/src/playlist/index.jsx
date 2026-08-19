@@ -2,10 +2,12 @@ import React from 'react'
 import QueueMusicOutlinedIcon from '@material-ui/icons/QueueMusicOutlined'
 import QueueMusicIcon from '@material-ui/icons/QueueMusic'
 import DynamicMenuIcon from '../layout/DynamicMenuIcon'
-import PlaylistList from './PlaylistList'
-import PlaylistEdit from './PlaylistEdit'
-import PlaylistCreate from './PlaylistCreate'
-import PlaylistShow from './PlaylistShow'
+import { lazyLoad } from '../common'
+
+const PlaylistList = lazyLoad(() => import('./PlaylistList'))
+const PlaylistEdit = lazyLoad(() => import('./PlaylistEdit'))
+const PlaylistCreate = lazyLoad(() => import('./PlaylistCreate'))
+const PlaylistShow = lazyLoad(() => import('./PlaylistShow'))
 
 export default {
   list: PlaylistList,

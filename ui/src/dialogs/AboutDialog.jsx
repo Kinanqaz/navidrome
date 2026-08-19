@@ -448,19 +448,25 @@ const AboutDialog = ({ open, onClose }) => {
   const uiVersion = config.version
 
   useEffect(() => {
+    let isMounted = true
     subsonic
       .ping()
       .then((resp) => resp.json['subsonic-response'])
       .then((data) => {
-        if (data.status === 'ok') {
+        if (isMounted && data.status === 'ok') {
           setServerVersion(data.serverVersion)
         }
       })
       .catch((e) => {
-        // eslint-disable-next-line no-console
-        console.error('error pinging server', e)
+        if (isMounted) {
+          // eslint-disable-next-line no-console
+          console.error('error pinging server', e)
+        }
       })
-  }, [setServerVersion])
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   return (
     <Dialog

@@ -97,18 +97,18 @@ const useStyles = makeStyles(
           color: 'inherit',
         },
       },
-      // Fixed Minimalistic Mobile Header with generous top spacing from phone edge
+      // Sticky Minimalistic Mobile Header with generous top spacing from phone edge
       mobileAppBar: {
         paddingTop: 'calc(env(safe-area-inset-top) + 14px)',
         paddingBottom: '8px',
-        paddingLeft: '16px',
-        paddingRight: '16px',
+        paddingLeft: 'calc(12.5vw - 14px)',
+        paddingRight: 'calc(12.5vw - 14px)',
         backgroundColor: `${theme.palette.background.default} !important`,
         color: `${theme.palette.text.primary} !important`,
         boxShadow: 'none !important',
         border: 'none !important',
         borderBottom: 'none !important',
-        position: 'fixed !important',
+        position: 'sticky !important',
         top: 0,
         left: 0,
         right: 0,
@@ -123,11 +123,11 @@ const useStyles = makeStyles(
       // Floating Dynamic Search Pill
       searchPill: {
         width: '100%',
-        height: 46,
-        borderRadius: 23,
+        height: 52,
+        borderRadius: 26,
         display: 'flex',
         alignItems: 'center',
-        padding: '0 6px 0 8px',
+        padding: '0 6px 0 10px',
         backgroundColor: isDark
           ? 'rgba(255, 255, 255, 0.08)'
           : 'rgba(0, 0, 0, 0.05)',
@@ -148,7 +148,7 @@ const useStyles = makeStyles(
         boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.25)} !important`,
       },
       pillIconButton: {
-        padding: 8,
+        padding: 6,
         color: theme.palette.text.primary,
         flexShrink: 0,
         '&:hover': {
@@ -160,14 +160,14 @@ const useStyles = makeStyles(
       pillInput: {
         flex: 1,
         minWidth: 0,
-        marginLeft: 6,
-        marginRight: 6,
-        fontSize: '0.95rem',
+        marginLeft: 8,
+        marginRight: 8,
+        fontSize: '1rem',
         fontWeight: 400,
         color: theme.palette.text.primary,
         '& input': {
-          padding: '8px 0',
-          fontSize: '0.95rem',
+          padding: '10px 0',
+          fontSize: '1rem',
           color: `${theme.palette.text.primary} !important`,
           '&::placeholder': {
             color: theme.palette.text.secondary,
@@ -415,7 +415,7 @@ const MobileTopBar = () => {
   }, [location.pathname, location.search])
 
   return (
-    <MuiAppBar position="fixed" className={classes.mobileAppBar}>
+    <MuiAppBar position="sticky" className={classes.mobileAppBar}>
       {/* Hidden React-Admin Title Portal anchor */}
       <span id="react-admin-title" style={{ display: 'none' }} />
 
@@ -432,7 +432,7 @@ const MobileTopBar = () => {
           aria-label="Open menu"
           tabIndex={-1}
         >
-          <MenuIcon style={{ fontSize: 24 }} />
+          <MenuIcon style={{ fontSize: 29 }} />
         </IconButton>
 
         <InputBase
@@ -452,7 +452,7 @@ const MobileTopBar = () => {
             aria-label="Clear search"
             tabIndex={-1}
           >
-            <MdClose size={20} />
+            <MdClose size={24} />
           </IconButton>
         ) : null}
 
@@ -462,7 +462,7 @@ const MobileTopBar = () => {
           aria-label="Cast to device"
           tabIndex={-1}
         >
-          <MdCast size={22} />
+          <MdCast size={27} />
         </IconButton>
       </div>
 
@@ -476,10 +476,7 @@ const NO_SEARCH_BAR_PREFIXES = [
   '/personal',
   '/user',
   '/player',
-  '/transcoding',
   '/library',
-  '/missing',
-  '/plugin',
 ]
 
 const shouldHideSearchBar = (pathname) => {
@@ -493,7 +490,11 @@ const AppBar = (props) => {
 
   if (isMobile) {
     if (shouldHideSearchBar(location.pathname)) {
-      return <Dialogs />
+      return (
+        <div style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}>
+          <Dialogs />
+        </div>
+      )
     }
     return <MobileTopBar />
   }

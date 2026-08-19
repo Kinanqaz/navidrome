@@ -9,8 +9,6 @@ import {
   useDataProvider,
   useTranslate,
 } from 'react-admin'
-import ReactGA from 'react-ga'
-import { GlobalHotKeys } from 'react-hotkeys'
 import ReactJkMusicPlayer from 'navidrome-music-player'
 import 'navidrome-music-player/assets/index.css'
 import useCurrentTheme from '../themes/useCurrentTheme'
@@ -32,8 +30,6 @@ import PlayerToolbar from './PlayerToolbar'
 import { sendNotification } from '../utils'
 import subsonic from '../subsonic'
 import locale from './locale'
-import { keyMap } from '../hotkeys'
-import keyHandlers from './keyHandlers'
 import { calculateGain } from '../utils/calculateReplayGain'
 import { detectBrowserProfile, decisionService } from '../transcode'
 import DesktopPlayerResizeHandle from './DesktopPlayerResizeHandle'
@@ -100,7 +96,7 @@ export const Player = () => {
     const state = playerStateRef.current
     const currentIdx = state.savedPlayIndex || 0
     const trackIds = state.queue
-      .slice(currentIdx, currentIdx + 4)
+      .slice(currentIdx, currentIdx + 10)
       .filter((item) => !item.isRadio && item.trackId)
       .map((item) => item.trackId)
 
@@ -124,20 +120,20 @@ export const Player = () => {
     })
   }, [dispatch])
 
-  // Pre-fetch transcode decisions for next 2-3 songs when queue or position changes
+  // Pre-fetch transcode decisions for upcoming songs (up to 10 ahead) when queue or playback position advances
   useEffect(() => {
     if (!playerState.queue.length) return
 
-    const currentIdx = playerState.savedPlayIndex || 0
+    const currentIdx = playerState.playIndex ?? playerState.savedPlayIndex ?? 0
     const nextSongIds = playerState.queue
-      .slice(currentIdx + 1, currentIdx + 4)
-      .filter((item) => !item.isRadio)
+      .slice(currentIdx + 1, currentIdx + 11)
+      .filter((item) => !item.isRadio && item.trackId)
       .map((item) => item.trackId)
 
     if (nextSongIds.length > 0) {
       decisionService.prefetchDecisions(nextSongIds)
     }
-  }, [playerState.queue, playerState.savedPlayIndex])
+  }, [playerState.queue, playerState.savedPlayIndex, playerState.playIndex])
 
   const visible = authenticated && playerState.queue.length > 0
   const isRadio = playerState.current?.isRadio || false
@@ -234,7 +230,7 @@ export const Player = () => {
       bounds: 'body',
       playMode: playerState.mode,
       mode: 'full',
-      loadAudioErrorPlayNext: false,
+      loadAudioErrorPlayNext: true,
       autoPlayInitLoadPlayList: true,
       clearPriorAudioLists: false,
       showDestroy: true,
@@ -360,13 +356,6 @@ export const Player = () => {
           }
           setHeartbeatTrackId(info.trackId)
         }
-        if (config.gaTrackingId) {
-          ReactGA.event({
-            category: 'Player',
-            action: 'Play song',
-            label: `${song.title} - ${song.artist}`,
-          })
-        }
         if (showNotifications) {
           sendNotification(
             song.title,
@@ -449,8 +438,13 @@ export const Player = () => {
 
   const onAudioError = useCallback(
     (error, currentPlayId, audioLists, audioInfo) => {
-      // Invalidate all cached decisions — token may be stale
-      decisionService.invalidateAll()
+      // Invalidate the failed track decision instead of nuking the entire cache
+      const failingTrackId = audioInfo?.trackId || audioInfo?.id
+      if (failingTrackId && decisionService.invalidate) {
+        decisionService.invalidate(failingTrackId)
+      } else {
+        decisionService.invalidateAll()
+      }
 
       // Pre-fetch decisions for upcoming songs with fresh tokens
       const currentIdx = playerState.queue.findIndex(
@@ -458,8 +452,8 @@ export const Player = () => {
       )
       if (currentIdx >= 0) {
         const nextSongIds = playerState.queue
-          .slice(currentIdx + 1, currentIdx + 4)
-          .filter((item) => !item.isRadio)
+          .slice(currentIdx + 1, currentIdx + 11)
+          .filter((item) => !item.isRadio && item.trackId)
           .map((item) => item.trackId)
         if (nextSongIds.length > 0) {
           decisionService.prefetchDecisions(nextSongIds)
@@ -489,11 +483,6 @@ export const Player = () => {
   if (!visible) {
     document.title = 'Navidrome'
   }
-
-  const handlers = useMemo(
-    () => keyHandlers(audioInstance, playerState),
-    [audioInstance, playerState],
-  )
 
   useEffect(() => {
     if (isMobilePlayer && audioInstance) {
@@ -644,7 +633,7 @@ export const Player = () => {
     el.style.transform = ''
   }, [isPhone, visible, mobileExpanded])
 
-  // Clean Mobile swipe & tap gesture handler
+  // High-performance Mobile swipe & tap gesture handler
   useEffect(() => {
     if (!visible || !isPhone) return undefined
 
@@ -657,21 +646,18 @@ export const Player = () => {
     const getMobileEl = () =>
       document.querySelector('.react-jinke-music-player-mobile')
 
-    const handlePointerStart = (e) => {
-      const clientX = e.clientX ?? e.touches?.[0]?.clientX
-      const clientY = e.clientY ?? e.touches?.[0]?.clientY
-      if (clientX == null || clientY == null) return
-
+    const handleTouchStart = (e) => {
+      if (e.touches.length !== 1) return
+      const touch = e.touches[0]
       const target = e.target
       const el = getMobileEl()
       if (!el) return
-      const container = target?.closest?.('.react-jinke-music-player-mobile')
-      if (!container) return
+      if (!target?.closest?.('.react-jinke-music-player-mobile')) return
 
       if (mobileExpanded) {
         const isHeaderOrTop =
           target?.closest?.('.react-jinke-music-player-mobile-header') ||
-          clientY < 90
+          touch.clientY < 90
 
         if (!isHeaderOrTop) {
           const scrollable = target?.closest?.(
@@ -702,21 +688,18 @@ export const Player = () => {
         }
       }
 
-      startY = clientY
-      startX = clientX
+      startY = touch.clientY
+      startX = touch.clientX
       startTime = Date.now()
       wasExpanded = mobileExpanded
       isDragging = false
     }
 
-    const handlePointerMove = (e) => {
-      if (startY <= 0) return
-      const clientX = e.clientX ?? e.touches?.[0]?.clientX
-      const clientY = e.clientY ?? e.touches?.[0]?.clientY
-      if (clientX == null || clientY == null) return
-
-      const deltaY = clientY - startY
-      const deltaX = clientX - startX
+    const handleTouchMove = (e) => {
+      if (startY <= 0 || e.touches.length !== 1) return
+      const touch = e.touches[0]
+      const deltaY = touch.clientY - startY
+      const deltaX = touch.clientX - startX
       const el = getMobileEl()
       if (!el) return
 
@@ -727,8 +710,7 @@ export const Player = () => {
             isDragging = true
             el.classList.add('nd-mobile-dragging')
           }
-          const scale = Math.max(0.88, 1 - (deltaY / window.innerHeight) * 0.18)
-          el.style.transform = `translate3d(0, ${deltaY}px, 0) scale(${scale})`
+          el.style.transform = `translate3d(0, ${deltaY}px, 0)`
         }
       } else {
         // Swiping up from mini bar
@@ -737,15 +719,16 @@ export const Player = () => {
             isDragging = true
             el.classList.add('nd-mobile-dragging')
           }
-          el.style.transform = `translate3d(0, ${deltaY * 0.75}px, 0)`
+          el.style.transform = `translate3d(0, ${deltaY * 0.5}px, 0)`
         }
       }
     }
 
-    const handlePointerEnd = (e) => {
+    const handleTouchEnd = (e) => {
       if (startY <= 0) return
-      const clientX = e.clientX ?? e.changedTouches?.[0]?.clientX ?? startX
-      const clientY = e.clientY ?? e.changedTouches?.[0]?.clientY ?? startY
+      const touch = e.changedTouches?.[0]
+      const clientX = touch ? touch.clientX : startX
+      const clientY = touch ? touch.clientY : startY
       const el = getMobileEl()
 
       const deltaY = clientY - startY
@@ -753,23 +736,48 @@ export const Player = () => {
       const elapsed = Date.now() - startTime
       const velocityY = deltaY / Math.max(elapsed, 1)
 
-      if (el) {
-        el.classList.remove('nd-mobile-dragging')
-        el.style.transform = ''
-      }
-
-      if (isDragging) {
+      if (isDragging && el) {
         if (wasExpanded) {
-          if (deltaY > 50 || velocityY > 0.25) {
+          if (deltaY > 55 || velocityY > 0.25) {
+            // Smoothly collapse directly into mini bar player
+            el.classList.remove('nd-mobile-dragging')
+            el.style.transform = ''
+            el.style.transition = ''
             setMobileExpanded(false)
+          } else {
+            // Snap back up to full screen
+            el.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)'
+            el.style.transform = 'translate3d(0, 0, 0)'
+            setTimeout(() => {
+              if (el) {
+                el.classList.remove('nd-mobile-dragging')
+                el.style.transform = ''
+                el.style.transition = ''
+              }
+            }, 250)
           }
         } else {
-          if (deltaY < -35 || velocityY < -0.25) {
+          // Swiping up from mini bar
+          if (deltaY < -25 || velocityY < -0.25) {
+            // Smoothly expand directly into full screen player
+            el.classList.remove('nd-mobile-dragging')
+            el.style.transform = ''
+            el.style.transition = ''
             setMobileExpanded(true)
+          } else {
+            el.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)'
+            el.style.transform = 'translate3d(0, 0, 0)'
+            setTimeout(() => {
+              if (el) {
+                el.classList.remove('nd-mobile-dragging')
+                el.style.transform = ''
+                el.style.transition = ''
+              }
+            }, 250)
           }
         }
       } else if (Math.abs(deltaY) < 12 && Math.abs(deltaX) < 12) {
-        // Clean tap/click toggle
+        // Clean tap toggle
         const target = e.target
         if (!wasExpanded) {
           const isPlayBtn =
@@ -794,26 +802,22 @@ export const Player = () => {
       isDragging = false
     }
 
-    window.addEventListener('touchstart', handlePointerStart, { passive: true })
-    window.addEventListener('touchmove', handlePointerMove, { passive: true })
-    window.addEventListener('touchend', handlePointerEnd, { passive: true })
-
-    window.addEventListener('pointerdown', handlePointerStart, { passive: true })
-    window.addEventListener('pointermove', handlePointerMove, { passive: true })
-    window.addEventListener('pointerup', handlePointerEnd, { passive: true })
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove', handleTouchMove, { passive: true })
+    window.addEventListener('touchend', handleTouchEnd, { passive: true })
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true })
 
     return () => {
-      window.removeEventListener('touchstart', handlePointerStart)
-      window.removeEventListener('touchmove', handlePointerMove)
-      window.removeEventListener('touchend', handlePointerEnd)
-      window.removeEventListener('pointerdown', handlePointerStart)
-      window.removeEventListener('pointermove', handlePointerMove)
-      window.removeEventListener('pointerup', handlePointerEnd)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove', handleTouchMove)
+      window.removeEventListener('touchend', handleTouchEnd)
+      window.removeEventListener('touchcancel', handleTouchEnd)
 
       const cleanupEl = getMobileEl()
       if (cleanupEl) {
         cleanupEl.classList.remove('nd-mobile-dragging')
         cleanupEl.style.transform = ''
+        cleanupEl.style.transition = ''
       }
     }
   }, [visible, isPhone, mobileExpanded])
@@ -832,14 +836,13 @@ export const Player = () => {
       const desktopCover = document.querySelector(
         '.music-player-panel .panel-content .img-content',
       )
-      const target = isPhone ? mobileCover : desktopCover
+      const target = isPhone ? (mobileExpanded ? mobileCover : null) : desktopCover
       setCoverTarget(target)
     }
 
-    updateCoverTarget()
-    const timer = setInterval(updateCoverTarget, 400)
-    return () => clearInterval(timer)
-  }, [visible, isPhone])
+    const rafId = requestAnimationFrame(updateCoverTarget)
+    return () => cancelAnimationFrame(rafId)
+  }, [visible, isPhone, mobileExpanded])
 
   // Listen to toolbar lyrics button clicks/touches to toggle lyrics
   useEffect(() => {
@@ -931,7 +934,6 @@ export const Player = () => {
             />,
             coverTarget,
           )}
-        <GlobalHotKeys handlers={handlers} keyMap={keyMap} allowChanges />
       </>
     </ThemeProvider>
   )

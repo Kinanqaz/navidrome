@@ -49,7 +49,6 @@ const useStyles = makeStyles((theme) => {
     root: {
       width: '100%',
       maxWidth: '100%',
-      overflowX: 'hidden',
       boxSizing: 'border-box',
     },
     summary: {

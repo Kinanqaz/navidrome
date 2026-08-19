@@ -45,8 +45,8 @@ const useStyles = makeStyles((theme) => {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      margin: '8px 0 16px 0',
-      padding: '6px 0 2px 0',
+      margin: '4px 0 14px 0',
+      padding: '2px 0 2px 0',
       boxSizing: 'border-box',
     },
     item: {
@@ -363,7 +363,7 @@ export const MobileQuickActions = ({ resource = 'song' }) => {
               : history.push('/song/mostPlayed')
           }
           role="button"
-          aria-label="Most played"
+          aria-label="Most Played"
         >
           <div
             className={clsx(
@@ -375,8 +375,8 @@ export const MobileQuickActions = ({ resource = 'song' }) => {
             <MdTrendingUp size={26} />
           </div>
           <span className={classes.label}>
-            {translate('resources.album.lists.mostPlayed', {
-              _: 'Most played',
+            {translate('resources.song.lists.mostPlayed', {
+              _: 'Most Played',
             })}
           </span>
         </div>
@@ -390,7 +390,7 @@ export const MobileQuickActions = ({ resource = 'song' }) => {
               : history.push('/song/recentlyPlayed')
           }
           role="button"
-          aria-label="Recently played"
+          aria-label="Recently"
         >
           <div
             className={clsx(
@@ -402,8 +402,8 @@ export const MobileQuickActions = ({ resource = 'song' }) => {
             <MdHistory size={26} />
           </div>
           <span className={classes.label}>
-            {translate('resources.album.lists.recentlyPlayed', {
-              _: 'History',
+            {translate('resources.song.lists.recentlyPlayed', {
+              _: 'Recently',
             })}
           </span>
         </div>

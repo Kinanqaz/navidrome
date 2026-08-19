@@ -53,6 +53,15 @@
         "info": "Get Info",
         "instantMix": "Instant Mix",
         "deleteFile": "Delete File"
+      },
+      "lists": {
+        "all": "All",
+        "random": "Random",
+        "recentlyAdded": "Recently Added",
+        "recentlyPlayed": "Recently",
+        "mostPlayed": "Most Played",
+        "starred": "Favourites",
+        "topRated": "Top Rated"
       }
     },
     "album": {

@@ -15,7 +15,6 @@ import { useMediaQuery, withWidth } from '@material-ui/core'
 import FavoriteIcon from '@material-ui/icons/Favorite'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
 import { makeStyles } from '@material-ui/core/styles'
-import { useDrag } from 'react-dnd'
 import clsx from 'clsx'
 import {
   ArtistContextMenu,
@@ -30,7 +29,6 @@ import {
 } from '../common'
 import config from '../config'
 import ArtistSimpleList from './ArtistSimpleList'
-import { DraggableTypes } from '../consts'
 import en from '../i18n/en.json'
 import { formatBytes } from '../utils/index.js'
 import { songFilterStyles } from '../song/SongList'
@@ -92,14 +90,6 @@ const ArtistFilter = (props) => {
 
 const ArtistDatagridRow = (props) => {
   const { record } = props
-  const [, dragArtistRef] = useDrag(
-    () => ({
-      type: DraggableTypes.ARTIST,
-      item: { artistIds: [record?.id] },
-      options: { dropEffect: 'copy' },
-    }),
-    [record],
-  )
   const classes = useStyles()
   const computedClasses = clsx(
     props.className,
@@ -107,7 +97,7 @@ const ArtistDatagridRow = (props) => {
     record?.missing && classes.missingRow,
   )
   return (
-    <DatagridRow ref={dragArtistRef} {...props} className={computedClasses} />
+    <DatagridRow {...props} className={computedClasses} />
   )
 }
 

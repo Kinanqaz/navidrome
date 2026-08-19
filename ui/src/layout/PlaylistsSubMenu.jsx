@@ -14,38 +14,18 @@ import QueueMusicOutlinedIcon from '@material-ui/icons/QueueMusicOutlined'
 import FavoriteIcon from '@material-ui/icons/Favorite'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
 import { BiListUl } from 'react-icons/bi'
-import { useDrop } from 'react-dnd'
 import SubMenu from './SubMenu'
 import { canChangeTracks, OverflowTooltip, useRefreshOnEvents } from '../common'
-import { DraggableTypes } from '../consts'
 import { setSidebarPlaylistsOnlyFavourites } from '../actions'
 import config from '../config'
 
 const PlaylistMenuItemLink = ({ pls, sidebarIsOpen }) => {
-  const dataProvider = useDataProvider()
-  const notify = useNotify()
-
-  const [, dropRef] = useDrop(() => ({
-    accept: canChangeTracks(pls) ? DraggableTypes.ALL : [],
-    drop: (item) =>
-      dataProvider
-        .addToPlaylist(pls.id, item)
-        .then((res) => {
-          notify('message.songsAddedToPlaylist', 'info', {
-            smart_count: res.data?.added,
-          })
-        })
-        .catch(() => {
-          notify('ra.page.error', 'warning')
-        }),
-  }))
-
   return (
     <MenuItemLink
       to={`/playlist/${pls.id}/show`}
       primaryText={
         <OverflowTooltip title={pls.name} placement="right">
-          <Typography variant="inherit" noWrap ref={dropRef}>
+          <Typography variant="inherit" noWrap>
             {pls.name}
           </Typography>
         </OverflowTooltip>

@@ -1,4 +1,3 @@
-import ReactGA from 'react-ga'
 import { Provider } from 'react-redux'
 import { createHashHistory } from 'history'
 import {
@@ -7,21 +6,16 @@ import {
   useSetLocale,
   useRefresh,
 } from 'react-admin'
-import { HotKeys } from 'react-hotkeys'
 import dataProvider from './dataProvider'
 import authProvider from './authProvider'
 import { Layout, Login, Logout } from './layout'
-import transcoding from './transcoding'
 import player from './player'
 import user from './user'
 import song from './song'
 import album from './album'
 import artist from './artist'
 import playlist from './playlist'
-import radio from './radio'
-import share from './share'
 import library from './library'
-import plugin from './plugin'
 import { Player } from './audioplayer'
 import customRoutes from './routes'
 import {
@@ -37,29 +31,15 @@ import {
   settingsReducer,
   replayGainReducer,
   downloadMenuDialogReducer,
-  shareDialogReducer,
   transcodingReducer,
 } from './reducers'
 import createAdminStore from './store/createAdminStore'
 import { i18nProvider, retrieveTranslation } from './i18n'
-import config, { shareInfo } from './config'
-import { keyMap } from './hotkeys'
+import config from './config'
 import useChangeThemeColor from './useChangeThemeColor'
-import SharePlayer from './share/SharePlayer'
-import { HTML5Backend } from 'react-dnd-html5-backend'
-import { DndProvider } from 'react-dnd'
-import missing from './missing/index.js'
 import { useEffect } from 'react'
 
 const history = createHashHistory()
-
-if (config.gaTrackingId) {
-  ReactGA.initialize(config.gaTrackingId)
-  history.listen((location) => {
-    ReactGA.pageview(location.pathname)
-  })
-  ReactGA.pageview(window.location.pathname)
-}
 
 const adminStore = createAdminStore({
   authProvider,
@@ -75,7 +55,6 @@ const adminStore = createAdminStore({
     expandInfoDialog: expandInfoDialogReducer,
     listenBrainzTokenDialog: listenBrainzTokenDialogReducer,
     saveQueueDialog: saveQueueDialogReducer,
-    shareDialog: shareDialogReducer,
     activity: activityReducer,
     settings: settingsReducer,
     replayGain: replayGainReducer,
@@ -128,11 +107,6 @@ const Admin = (props) => {
         <Resource name="album" {...album} />,
         <Resource name="artist" {...artist} />,
         <Resource
-          name="radio"
-          {...(permissions === 'admin' ? radio.admin : radio.all)}
-        />,
-        config.enableSharing && <Resource name="share" {...share} />,
-        <Resource
           name="playlist"
           {...playlist}
           options={{ subMenu: 'playlist' }}
@@ -145,31 +119,8 @@ const Admin = (props) => {
         />,
         permissions === 'admin' ? (
           <Resource
-            name="transcoding"
-            {...transcoding}
-            options={{ subMenu: 'settings' }}
-          />
-        ) : (
-          <Resource name="transcoding" />
-        ),
-        permissions === 'admin' ? (
-          <Resource
             name="library"
             {...library}
-            options={{ subMenu: 'settings' }}
-          />
-        ) : null,
-        permissions === 'admin' ? (
-          <Resource
-            name="missing"
-            {...missing}
-            options={{ subMenu: 'settings' }}
-          />
-        ) : null,
-        permissions === 'admin' && config.pluginsEnabled ? (
-          <Resource
-            name="plugin"
-            {...plugin}
             options={{ subMenu: 'settings' }}
           />
         ) : null,
@@ -188,19 +139,10 @@ const Admin = (props) => {
   /* eslint-enable react/jsx-key */
 }
 
-const AppWithHotkeys = () => {
+const AppRoot = () => {
   let language = localStorage.getItem('locale') || 'en'
   document.documentElement.lang = language
-  if (config.enableSharing && shareInfo) {
-    return <SharePlayer />
-  }
-  return (
-    <HotKeys keyMap={keyMap}>
-      <DndProvider backend={HTML5Backend}>
-        <App />
-      </DndProvider>
-    </HotKeys>
-  )
+  return <App />
 }
 
-export default AppWithHotkeys
+export default AppRoot

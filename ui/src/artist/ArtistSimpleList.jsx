@@ -37,6 +37,7 @@ const ArtistSimpleList = ({
   loading,
   selectedIds,
   total,
+  syncWithLocation,
   ...rest
 }) => {
   const classes = useStyles({ classes: classesOverride })

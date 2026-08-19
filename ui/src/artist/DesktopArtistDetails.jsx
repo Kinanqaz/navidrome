@@ -5,8 +5,7 @@ import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import ArtistExternalLinks from './ArtistExternalLink'
 import config from '../config'
-import { LoveButton, RatingField, ImageUploadOverlay } from '../common'
-import Lightbox from 'react-image-lightbox'
+import { LoveButton, RatingField, ImageUploadOverlay, ImageViewerDialog } from '../common'
 import ExpandInfoDialog from '../dialogs/ExpandInfoDialog'
 import AlbumInfo from '../album/AlbumInfo'
 import subsonic from '../subsonic'
@@ -151,12 +150,11 @@ const DesktopArtistDetails = ({ artistInfo, record, biography }) => {
           </Typography>
         </div>
         {isLightboxOpen && (
-          <Lightbox
-            imagePadding={50}
-            animationDuration={200}
-            imageTitle={record.name}
-            mainSrc={subsonic.getCoverArtUrl(record)}
-            onCloseRequest={() => setLightboxOpen(false)}
+          <ImageViewerDialog
+            title={record.name}
+            src={subsonic.getCoverArtUrl(record)}
+            open={isLightboxOpen}
+            onClose={() => setLightboxOpen(false)}
           />
         )}
       </Card>

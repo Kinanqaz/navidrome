@@ -44,6 +44,36 @@ export default defineConfig({
   build: {
     outDir: 'build',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@material-ui')) {
+              return 'vendor-mui'
+            }
+            if (
+              id.includes('react-admin') ||
+              id.includes('ra-data-json-server') ||
+              id.includes('ra-i18n-polyglot')
+            ) {
+              return 'vendor-ra'
+            }
+            if (id.includes('navidrome-music-player')) {
+              return 'vendor-player'
+            }
+            if (
+              id.includes('/react/') ||
+              id.includes('/react-dom/') ||
+              id.includes('/react-router') ||
+              id.includes('/redux') ||
+              id.includes('/react-redux')
+            ) {
+              return 'vendor-react'
+            }
+          }
+        },
+      },
+    },
   },
   test: {
     globals: true,

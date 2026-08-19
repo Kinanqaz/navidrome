@@ -147,23 +147,15 @@ const useStyle = makeStyles(
           boxSizing: 'border-box !important',
           overflow: 'hidden !important',
           backgroundColor: '#0c0c12 !important',
-          transform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-          WebkitBackfaceVisibility: 'hidden',
-          willChange: 'transform, border-radius, top, bottom, left, right, height, opacity',
+          willChange: 'top, height, left, right, border-radius, box-shadow, padding',
           transition:
-            'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1), border-radius 0.38s cubic-bezier(0.32, 0.72, 0, 1), top 0.38s cubic-bezier(0.32, 0.72, 0, 1), bottom 0.38s cubic-bezier(0.32, 0.72, 0, 1), left 0.38s cubic-bezier(0.32, 0.72, 0, 1), right 0.38s cubic-bezier(0.32, 0.72, 0, 1), height 0.38s cubic-bezier(0.32, 0.72, 0, 1), padding 0.38s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.38s ease, background-color 0.38s ease',
+            'top 0.36s cubic-bezier(0.25, 1, 0.5, 1), height 0.36s cubic-bezier(0.25, 1, 0.5, 1), left 0.36s cubic-bezier(0.25, 1, 0.5, 1), right 0.36s cubic-bezier(0.25, 1, 0.5, 1), border-radius 0.36s cubic-bezier(0.25, 1, 0.5, 1), padding 0.36s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.36s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.36s ease',
           WebkitTapHighlightColor: 'transparent !important',
           outline: 'none !important',
           userSelect: 'none !important',
           '&, & *, & *:focus, & *:focus-visible, & *:active, & *:hover': {
             WebkitTapHighlightColor: 'transparent !important',
             outline: 'none !important',
-          },
-          '& .react-jinke-music-player-mobile-cover': {
-            transform: 'translateZ(0)',
-            transition:
-              'width 0.38s cubic-bezier(0.32, 0.72, 0, 1), height 0.38s cubic-bezier(0.32, 0.72, 0, 1), max-height 0.38s cubic-bezier(0.32, 0.72, 0, 1), border-radius 0.38s cubic-bezier(0.32, 0.72, 0, 1), margin 0.38s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.38s ease !important',
           },
           '&::before': {
             content: '""',
@@ -204,6 +196,7 @@ const useStyle = makeStyles(
         },
         // Dragging State (disable transitions during real-time tracking)
         '& .react-jinke-music-player-mobile.nd-mobile-dragging': {
+          animation: 'none !important',
           transition: 'none !important',
           '&, & *': {
             transition: 'none !important',
@@ -247,15 +240,6 @@ const useStyle = makeStyles(
               boxShadow: 'none !important',
               overflow: 'hidden !important',
               zIndex: '2 !important',
-              '& .nd-artwork-carousel': {
-                pointerEvents: 'none !important',
-                touchAction: 'none !important',
-                borderRadius: '0 !important',
-              },
-              '&:has(.nd-lyrics-canvas) img.cover, &:has(.nd-artwork-carousel) img.cover': {
-                opacity: '0 !important',
-                visibility: 'hidden !important',
-              },
               '& img.cover': {
                 width: '100% !important',
                 height: '100% !important',
@@ -326,11 +310,9 @@ const useStyle = makeStyles(
               alignItems: 'center !important',
               justifyContent: 'center !important',
               '& .group:not(.play-btn):not(.loading-icon)': {
-                display: 'inline-flex !important',
+                display: 'none !important',
                 opacity: '0 !important',
                 pointerEvents: 'none !important',
-                transform: 'scale(0.85) translateY(8px) !important',
-                transition: 'opacity 0.18s ease, transform 0.18s ease !important',
               },
               '& .play-btn, & .loading-icon': {
                 display: 'inline-flex !important',
@@ -346,13 +328,10 @@ const useStyle = makeStyles(
                 borderRadius: '50% !important',
                 boxShadow: 'none !important',
                 cursor: 'pointer !important',
-                transition:
-                  'width 0.38s cubic-bezier(0.32, 0.72, 0, 1), height 0.38s cubic-bezier(0.32, 0.72, 0, 1), min-width 0.38s cubic-bezier(0.32, 0.72, 0, 1), min-height 0.38s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.28s ease, margin 0.38s cubic-bezier(0.32, 0.72, 0, 1) !important',
                 '& svg': {
                   color: '#ffffff !important',
                   fill: '#ffffff !important',
                   fontSize: '32px !important',
-                  transition: 'font-size 0.38s cubic-bezier(0.32, 0.72, 0, 1), fill 0.28s ease !important',
                 },
               },
             },
@@ -367,9 +346,8 @@ const useStyle = makeStyles(
               zIndex: '4 !important',
               pointerEvents: 'none !important',
               '& .current-time, & .duration, & .rc-slider-handle': {
+                display: 'none !important',
                 opacity: '0 !important',
-                pointerEvents: 'none !important',
-                transition: 'opacity 0.18s ease !important',
               },
               '& .rc-slider': {
                 height: '3.5px !important',
@@ -385,10 +363,9 @@ const useStyle = makeStyles(
               },
             },
             '& .react-jinke-music-player-mobile-operation': {
+              display: 'none !important',
               opacity: '0 !important',
               pointerEvents: 'none !important',
-              transform: 'scale(0.92) translateY(12px) !important',
-              transition: 'opacity 0.18s ease, transform 0.18s ease !important',
             },
           },
         // Expanded (Full-Screen Player) State
@@ -464,11 +441,6 @@ const useStyle = makeStyles(
               borderRadius: '20px !important',
               boxShadow: '0 18px 44px rgba(0, 0, 0, 0.5) !important',
               overflow: 'hidden !important',
-              '& .nd-artwork-carousel': {
-                pointerEvents: 'auto !important',
-                touchAction: 'pan-y !important',
-                borderRadius: '20px !important',
-              },
               '&:has(.nd-lyrics-canvas)': {
               backgroundColor: '#0c0c12 !important',
             },
@@ -494,8 +466,6 @@ const useStyle = makeStyles(
               textAlign: 'center !important',
               userSelect: 'none !important',
               opacity: '1 !important',
-              pointerEvents: 'auto !important',
-              transition: 'opacity 0.28s cubic-bezier(0.32, 0.72, 0, 1) 0.08s !important',
             },
             '& .rc-slider': {
               height: '14px !important',
@@ -528,9 +498,6 @@ const useStyle = makeStyles(
               transform: 'translateY(-50%) !important',
               backgroundColor: '#ffffff !important',
               border: 'none !important',
-              opacity: '1 !important',
-              pointerEvents: 'auto !important',
-              transition: 'opacity 0.28s cubic-bezier(0.32, 0.72, 0, 1) 0.08s !important',
               boxShadow: '0 2px 6px rgba(0, 0, 0, 0.45) !important',
               '&:hover, &:active': {
                 transform: 'translateY(-50%) scale(1.2) !important',
@@ -564,8 +531,6 @@ const useStyle = makeStyles(
               color: '#ffffff !important',
               opacity: '1 !important',
               pointerEvents: 'auto !important',
-              transform: 'none !important',
-              transition: 'opacity 0.28s cubic-bezier(0.32, 0.72, 0, 1) 0.08s, transform 0.28s cubic-bezier(0.32, 0.72, 0, 1) 0.08s !important',
               '&:focus, &:focus-visible, &:active, &:hover': {
                 outline: 'none !important',
                 color: '#ffffff !important',
@@ -597,8 +562,6 @@ const useStyle = makeStyles(
               userSelect: 'none !important',
               touchAction: 'manipulation !important',
               cursor: 'pointer !important',
-              transition:
-                'width 0.38s cubic-bezier(0.32, 0.72, 0, 1), height 0.38s cubic-bezier(0.32, 0.72, 0, 1), min-width 0.38s cubic-bezier(0.32, 0.72, 0, 1), min-height 0.38s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.28s ease, margin 0.38s cubic-bezier(0.32, 0.72, 0, 1) !important',
               '&:focus, &:focus-visible, &:active': {
                 outline: 'none !important',
                 boxShadow: '0 8px 26px rgba(0, 0, 0, 0.45) !important',
@@ -609,7 +572,6 @@ const useStyle = makeStyles(
                 fontSize: '38px !important',
                 outline: 'none !important',
                 transform: 'none !important',
-                transition: 'font-size 0.38s cubic-bezier(0.32, 0.72, 0, 1), fill 0.28s ease !important',
               },
             },
           },
@@ -623,7 +585,7 @@ const useStyle = makeStyles(
             display: 'block !important',
             opacity: '1 !important',
             pointerEvents: 'auto !important',
-            transition: 'opacity 0.28s cubic-bezier(0.32, 0.72, 0, 1) 0.08s, transform 0.28s cubic-bezier(0.32, 0.72, 0, 1) 0.08s !important',
+            transition: 'opacity 0.28s ease 0.08s !important',
             '& .items': {
               display: 'flex !important',
               flexWrap: 'wrap !important',
@@ -658,13 +620,6 @@ const useStyle = makeStyles(
                 padding: 0,
               },
             },
-          },
-        },
-        // Active interactive dragging state (no lag, 1:1 finger tracking)
-        '& .react-jinke-music-player-mobile.nd-mobile-dragging': {
-          transition: 'none !important',
-          '& *': {
-            transition: 'none !important',
           },
         },
         '& .react-jinke-music-player-mobile-singer, & .react-jinke-music-player-mobile-switch, & .react-jinke-music-player-mobile-play-model-tip':

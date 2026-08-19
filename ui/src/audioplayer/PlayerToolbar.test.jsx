@@ -44,10 +44,6 @@ vi.mock('../common', () => ({
   useToggleLove: vi.fn(),
 }))
 
-vi.mock('react-hotkeys', () => ({
-  GlobalHotKeys: () => <div data-testid="global-hotkeys" />,
-}))
-
 describe('<PlayerToolbar />', () => {
   const mockToggleLove = vi.fn()
   const mockSongData = { id: 'song-1', name: 'Test Song', starred: false }
@@ -143,19 +139,6 @@ describe('<PlayerToolbar />', () => {
   })
 
   describe('Common behavior', () => {
-    it('renders global hotkeys in both layouts', () => {
-      // Test desktop layout
-      useMediaQuery.mockReturnValue(true)
-      render(<PlayerToolbar id="song-1" />)
-      expect(screen.getByTestId('global-hotkeys')).toBeInTheDocument()
-
-      // Cleanup and test mobile layout
-      cleanup()
-      useMediaQuery.mockReturnValue(false)
-      render(<PlayerToolbar id="song-1" />)
-      expect(screen.getByTestId('global-hotkeys')).toBeInTheDocument()
-    })
-
     it('disables buttons when id is not provided and no queue song exists', () => {
       render(<PlayerToolbar />)
 

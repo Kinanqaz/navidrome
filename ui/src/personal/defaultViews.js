@@ -5,7 +5,6 @@ export const resourceDefaultViews = [
   'song',
   'album',
   'playlist',
-  'radio',
 ]
 
 export const isResourceDefaultView = (defaultView) =>

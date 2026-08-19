@@ -1,11 +1,9 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { useGetOne } from 'react-admin'
-import { GlobalHotKeys } from 'react-hotkeys'
 import { useMediaQuery } from '@material-ui/core'
 import clsx from 'clsx'
 import { LoveButton, SongContextMenu, useToggleLove } from '../common'
-import { keyMap } from '../hotkeys'
 import { makeStyles } from '@material-ui/core/styles'
 import MobileVolumeControl from './MobileVolumeControl'
 
@@ -158,11 +156,6 @@ const PlayerToolbar = ({ id, isRadio }) => {
   const [toggleLove, toggling] = useToggleLove('song', songRecord || {})
   const isDesktop = useMediaQuery('(min-width:810px)')
   const classes = useStyles()
-
-  const handlers = {
-    TOGGLE_LOVE: useCallback(() => toggleLove(), [toggleLove]),
-  }
-
   const buttonClass = isDesktop ? classes.button : classes.mobileButton
   const listItemClass = isDesktop ? classes.toolbar : classes.mobileListItem
 
@@ -191,7 +184,6 @@ const PlayerToolbar = ({ id, isRadio }) => {
 
   return (
     <>
-      <GlobalHotKeys keyMap={keyMap} handlers={handlers} allowChanges />
       {contextMenu}
       {!isDesktop && <MobileVolumeControl />}
       <li className={`${listItemClass} item`}>{loveButton}</li>

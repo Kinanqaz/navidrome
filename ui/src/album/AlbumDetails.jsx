@@ -16,11 +16,10 @@ import {
   useRecordContext,
   useTranslate,
 } from 'react-admin'
-import Lightbox from 'react-image-lightbox'
 import config from '../config'
-import 'react-image-lightbox/style.css'
 import subsonic from '../subsonic'
 import { Artwork } from '../common/Artwork'
+import { ImageViewerDialog } from '../common/ImageViewerDialog'
 import {
   ArtistLinkField,
   CollapsibleComment,
@@ -343,12 +342,11 @@ const AlbumDetails = (props) => {
         </div>
       )}
       {isLightboxOpen && (
-        <Lightbox
-          imagePadding={50}
-          animationDuration={200}
-          imageTitle={record.name}
-          mainSrc={fullImageUrl}
-          onCloseRequest={() => setLightboxOpen(false)}
+        <ImageViewerDialog
+          title={record.name}
+          src={fullImageUrl}
+          open={isLightboxOpen}
+          onClose={() => setLightboxOpen(false)}
         />
       )}
     </Card>

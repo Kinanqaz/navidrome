@@ -1,9 +1,11 @@
 import React from 'react'
-import AlbumList from './AlbumList'
-import AlbumShow from './AlbumShow'
+import { lazyLoad } from '../common'
 import DynamicMenuIcon from '../layout/DynamicMenuIcon'
 import AlbumOutlinedIcon from '@material-ui/icons/AlbumOutlined'
 import AlbumIcon from '@material-ui/icons/Album'
+
+const AlbumList = lazyLoad(() => import('./AlbumList'))
+const AlbumShow = lazyLoad(() => import('./AlbumShow'))
 
 export default {
   list: AlbumList,

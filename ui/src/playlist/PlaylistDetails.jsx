@@ -1,9 +1,6 @@
 import { useState } from 'react'
 import { Card, CardContent, Typography, useMediaQuery } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { useTranslate } from 'react-admin'
-import Lightbox from 'react-image-lightbox'
-import 'react-image-lightbox/style.css'
 import {
   CollapsibleComment,
   DurationField,
@@ -12,6 +9,7 @@ import {
   SizeField,
   isWritable,
   OverflowTooltip,
+  ImageViewerDialog,
 } from '../common'
 import subsonic from '../subsonic'
 import { Artwork } from '../common/Artwork'
@@ -163,12 +161,11 @@ const PlaylistDetails = (props) => {
         </div>
       </div>
       {isLightboxOpen && (
-        <Lightbox
-          imagePadding={50}
-          animationDuration={200}
-          imageTitle={record.name}
-          mainSrc={fullImageUrl}
-          onCloseRequest={() => setLightboxOpen(false)}
+        <ImageViewerDialog
+          title={record.name}
+          src={fullImageUrl}
+          open={isLightboxOpen}
+          onClose={() => setLightboxOpen(false)}
         />
       )}
     </Card>

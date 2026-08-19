@@ -57,10 +57,9 @@ describe('ContextMenus', () => {
       expect(screen.getByText('ra.action.download (1 KB)')).toBeInTheDocument()
     })
 
-    it('hides download and share for artists with no album-artist content', () => {
+    it('hides download for artists with no album-artist content', () => {
       renderMenu(ArtistContextMenu, { id: 'ar1', name: 'Artist', stats: {} })
       expect(screen.queryByText(/ra\.action\.download/)).not.toBeInTheDocument()
-      expect(screen.queryByText('ra.action.share')).not.toBeInTheDocument()
     })
   })
 

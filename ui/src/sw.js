@@ -49,7 +49,20 @@ const navigationHandler = createNavigationHandler(
 // self.__WB_MANIFEST is default injection point
 workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)
 
+// Cache artwork and cover images using StaleWhileRevalidate
+workbox.routing.registerRoute(
+  ({ request, url }) =>
+    request.destination === 'image' ||
+    url.pathname.includes('getCoverArt') ||
+    url.pathname.includes('getAvatar') ||
+    url.pathname.includes('/rest/getCoverArt'),
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: 'navidrome-artwork-cache',
+  }),
+)
+
 // Register this strategy to handle all navigations.
 workbox.routing.registerRoute(
   new workbox.routing.NavigationRoute(navigationHandler),
 )
+

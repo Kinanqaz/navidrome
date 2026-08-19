@@ -9,6 +9,7 @@ import {
   Tooltip,
   CircularProgress,
   Box,
+  useMediaQuery,
 } from '@material-ui/core'
 import { alpha } from '@material-ui/core/styles'
 import clsx from 'clsx'
@@ -23,13 +24,11 @@ import ViewListIcon from '@material-ui/icons/ViewList'
 import CategoryOutlinedIcon from '@material-ui/icons/CategoryOutlined'
 import WbSunnyOutlinedIcon from '@material-ui/icons/WbSunnyOutlined'
 import AccountCircle from '@material-ui/icons/AccountCircle'
-import {
-  MdTune,
-  MdInfo,
-  MdPerson,
-  MdSupervisorAccount,
-  MdExitToApp,
-} from 'react-icons/md'
+import TuneIcon from '@material-ui/icons/Tune'
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
+import PersonIcon from '@material-ui/icons/Person'
+import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount'
+import ExitToAppIcon from '@material-ui/icons/ExitToApp'
 import { VscSync } from 'react-icons/vsc'
 import { GiMagnifyingGlass } from 'react-icons/gi'
 import { humanize, pluralize } from 'inflection'
@@ -58,9 +57,16 @@ const useStyles = makeStyles((theme) => {
       flexDirection: 'column',
       minHeight: 'calc(100vh - 80px)',
       boxSizing: 'border-box',
+      [theme.breakpoints.down('sm')]: {
+        minHeight: 'auto',
+        paddingBottom: (props) => (props.addPadding ? '120px' : '24px'),
+      },
     },
     navSection: {
       flex: '1 1 auto',
+      [theme.breakpoints.down('sm')]: {
+        flex: '0 0 auto',
+      },
     },
     open: {
       width: 240,
@@ -117,6 +123,9 @@ const useStyles = makeStyles((theme) => {
       marginTop: 'auto',
       paddingTop: theme.spacing(1.5),
       borderTop: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+      [theme.breakpoints.down('sm')]: {
+        marginTop: theme.spacing(2),
+      },
     },
     userCard: {
       display: 'flex',
@@ -200,6 +209,7 @@ const settingsResources = (resource) =>
 
 const Menu = ({ dense = false }) => {
   const open = useSelector((state) => state.admin.ui.sidebarOpen)
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm'))
   const translate = useTranslate()
   const queue = useSelector((state) => state.player?.queue)
   const scanStatus = useSelector((state) => state.activity?.scanStatus || {})
@@ -216,8 +226,6 @@ const Menu = ({ dense = false }) => {
   const albumResource = resourcesByName.get('album')
   const artistResource = resourcesByName.get('artist')
   const playlistResource = resourcesByName.get('playlist')
-  const radioResource = resourcesByName.get('radio')
-  const shareResource = resourcesByName.get('share')
 
   const handleQuickScan = (e) => {
     e.stopPropagation()
@@ -309,9 +317,9 @@ const Menu = ({ dense = false }) => {
       if (!config.enableUserEditing) {
         return null
       }
-      userResource.icon = MdPerson
+      userResource.icon = PersonIcon
     } else {
-      userResource.icon = MdSupervisorAccount
+      userResource.icon = SupervisorAccountIcon
     }
     return renderSettingsMenuItemLink(
       userResource,
@@ -339,40 +347,45 @@ const Menu = ({ dense = false }) => {
         {renderResourceMenuItemLink(albumResource, '/album/all')}
         {renderResourceMenuItemLink(artistResource)}
         {renderResourceMenuItemLink(playlistResource)}
+        {isMobile &&
+          songLists.recentlyAdded &&
+          renderSongListMenuItemLink(
+            'recentlyAdded',
+            songLists.recentlyAdded,
+          )}
 
-        {/* Discover Section */}
-        <Divider className={classes.divider} />
-        {open && (
-          <Typography className={classes.sectionHeader}>
-            {translate('menu.discover', { _: 'Discover' })}
-          </Typography>
+        {/* Discover Section (Desktop Only) */}
+        {!isMobile && (
+          <>
+            <Divider className={classes.divider} />
+            {open && (
+              <Typography className={classes.sectionHeader}>
+                {translate('menu.discover', { _: 'Discover' })}
+              </Typography>
+            )}
+            {Object.keys(songLists).map((type) =>
+              renderSongListMenuItemLink(type, songLists[type]),
+            )}
+            <MenuItemLink
+              to="/genres"
+              activeClassName={classes.active}
+              className={classes.menuItem}
+              primaryText="Genres"
+              leftIcon={<CategoryOutlinedIcon />}
+              sidebarIsOpen={open}
+              dense={dense}
+            />
+            <MenuItemLink
+              to="/moods"
+              activeClassName={classes.active}
+              className={classes.menuItem}
+              primaryText="Moods"
+              leftIcon={<WbSunnyOutlinedIcon />}
+              sidebarIsOpen={open}
+              dense={dense}
+            />
+          </>
         )}
-        {Object.keys(songLists).map((type) =>
-          renderSongListMenuItemLink(type, songLists[type]),
-        )}
-        <MenuItemLink
-          to="/genres"
-          activeClassName={classes.active}
-          className={classes.menuItem}
-          primaryText="Genres"
-          leftIcon={<CategoryOutlinedIcon />}
-          sidebarIsOpen={open}
-          dense={dense}
-        />
-        <MenuItemLink
-          to="/moods"
-          activeClassName={classes.active}
-          className={classes.menuItem}
-          primaryText="Moods"
-          leftIcon={<WbSunnyOutlinedIcon />}
-          sidebarIsOpen={open}
-          dense={dense}
-        />
-
-        {/* Radios and Shares Section */}
-        <Divider className={classes.divider} />
-        {renderResourceMenuItemLink(radioResource)}
-        {renderResourceMenuItemLink(shareResource)}
       </div>
 
       {/* Bottom Profile & System Settings Section */}
@@ -444,7 +457,7 @@ const Menu = ({ dense = false }) => {
             activeClassName={classes.active}
             className={classes.menuItem}
             primaryText={translate('menu.personal.name')}
-            leftIcon={<MdTune size={22} />}
+            leftIcon={<TuneIcon />}
             sidebarIsOpen={open}
             dense={dense}
           />
@@ -458,7 +471,7 @@ const Menu = ({ dense = false }) => {
             to="#"
             className={classes.menuItem}
             primaryText={translate('menu.about')}
-            leftIcon={<MdInfo size={22} />}
+            leftIcon={<InfoOutlinedIcon />}
             onClick={(e) => {
               e.preventDefault()
               setAboutOpen(true)
@@ -472,7 +485,7 @@ const Menu = ({ dense = false }) => {
               to="#"
               className={classes.menuItem}
               primaryText={translate('ra.auth.logout') || 'Logout'}
-              leftIcon={<MdExitToApp size={22} />}
+              leftIcon={<ExitToAppIcon />}
               onClick={(e) => {
                 e.preventDefault()
                 handleLogout()

@@ -13,13 +13,11 @@ import {
 } from 'react-admin'
 import ShuffleIcon from '@material-ui/icons/Shuffle'
 import PlayArrowIcon from '@material-ui/icons/PlayArrow'
-import ShareIcon from '@material-ui/icons/Share'
 import CloudDownloadOutlinedIcon from '@material-ui/icons/CloudDownloadOutlined'
 import { IoIosRadio } from 'react-icons/io'
 import { playShuffle, playTopSongs } from './actions.js'
 import { playSimilar } from '../common/playbackActions.js'
 import {
-  openShareMenu,
   openDownloadMenu,
   DOWNLOAD_MENU_ARTIST,
 } from '../actions'
@@ -114,10 +112,6 @@ const ArtistActions = ({ className, record, ...rest }) => {
     }
   }, [dispatch, notify, record])
 
-  const handleShare = React.useCallback(() => {
-    dispatch(openShareMenu([record.id], 'artist', record.name))
-  }, [dispatch, record])
-
   const handleDownload = React.useCallback(() => {
     dispatch(openDownloadMenu(record, DOWNLOAD_MENU_ARTIST))
   }, [dispatch, record])
@@ -154,15 +148,6 @@ const ArtistActions = ({ className, record, ...rest }) => {
         loading={loadingAction === 'radio'}
         icon={<IoIosRadio className={classes.radioIcon} />}
       />
-      {config.enableSharing && hasAlbumArtistContent && (
-        <LoadingButton
-          onClick={handleShare}
-          label={translate('ra.action.share')}
-          className={classes.button}
-          size={isMobile ? 'small' : 'medium'}
-          icon={<ShareIcon />}
-        />
-      )}
       {config.enableDownloads && hasAlbumArtistContent && (
         <LoadingButton
           onClick={handleDownload}

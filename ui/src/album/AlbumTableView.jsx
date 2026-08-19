@@ -11,7 +11,6 @@ import {
 import { useMediaQuery } from '@material-ui/core'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
 import { makeStyles } from '@material-ui/core/styles'
-import { useDrag } from 'react-dnd'
 import {
   ArtistLinkField,
   ArtworkAvatar,
@@ -24,7 +23,6 @@ import {
   SizeField,
 } from '../common'
 import config from '../config'
-import { DraggableTypes } from '../consts'
 import clsx from 'clsx'
 
 const useStyles = makeStyles({
@@ -60,21 +58,13 @@ const useStyles = makeStyles({
 const AlbumDatagridRow = (props) => {
   const { record, className } = props
   const classes = useStyles()
-  const [, dragAlbumRef] = useDrag(
-    () => ({
-      type: DraggableTypes.ALBUM,
-      item: { albumIds: [record?.id] },
-      options: { dropEffect: 'copy' },
-    }),
-    [record],
-  )
   const computedClasses = clsx(
     className,
     classes.row,
     record.missing && classes.missingRow,
   )
   return (
-    <DatagridRow ref={dragAlbumRef} {...props} className={computedClasses} />
+    <DatagridRow {...props} className={computedClasses} />
   )
 }
 

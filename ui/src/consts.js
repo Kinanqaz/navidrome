@@ -9,23 +9,6 @@ export const AUTO_THEME_ID = 'AUTO_THEME_ID'
 
 export const AUTO_THEME_CONFIG_VALUE = 'Auto'
 
-export const DraggableTypes = {
-  SONG: 'song',
-  ALBUM: 'album',
-  DISC: 'disc',
-  ARTIST: 'artist',
-  ALL: [],
-}
-
-DraggableTypes.ALL.push(
-  DraggableTypes.SONG,
-  DraggableTypes.ALBUM,
-  DraggableTypes.DISC,
-  DraggableTypes.ARTIST,
-)
-
-export const RADIO_PLACEHOLDER_IMAGE = 'internet-radio-icon.svg'
-
 export const DEFAULT_SHARE_BITRATE = 128
 
 export const BITRATE_CHOICES = [

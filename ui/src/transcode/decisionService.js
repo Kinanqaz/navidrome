@@ -66,6 +66,14 @@ export function createDecisionService(fetchFn) {
     )
   }
 
+  function invalidate(songId) {
+    if (songId) {
+      cache.delete(songId)
+    } else {
+      cache.clear()
+    }
+  }
+
   function invalidateAll() {
     cache.clear()
   }
@@ -103,6 +111,7 @@ export function createDecisionService(fetchFn) {
     getCachedDecision,
     prefetchDecisions,
     resolveStreamUrl,
+    invalidate,
     invalidateAll,
     buildStreamUrl,
     setProfile,

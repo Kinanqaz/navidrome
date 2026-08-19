@@ -19,7 +19,6 @@ import {
   openExtendedInfoDialog,
   openDownloadMenu,
   DOWNLOAD_MENU_SONG,
-  openShareMenu,
 } from '../actions'
 import { LoveButton } from './LoveButton'
 import config from '../config'
@@ -135,18 +134,6 @@ export const SongContextMenu = ({
       action: (record, e) => {
         setPlaylistAnchorEl(e.currentTarget)
       },
-    },
-    share: {
-      enabled: config.enableSharing,
-      label: translate('ra.action.share'),
-      action: (record) =>
-        dispatch(
-          openShareMenu(
-            [record.mediaFileId || record.id],
-            'song',
-            record.title,
-          ),
-        ),
     },
     download: {
       enabled: config.enableDownloads,

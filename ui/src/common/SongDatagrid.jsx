@@ -22,13 +22,9 @@ import PropTypes from 'prop-types'
 import { makeStyles } from '@material-ui/core/styles'
 import AlbumIcon from '@material-ui/icons/Album'
 import clsx from 'clsx'
-import { useDrag } from 'react-dnd'
-import Lightbox from 'react-image-lightbox'
-import 'react-image-lightbox/style.css'
 import { playTracks } from '../actions'
 import subsonic from '../subsonic'
-import { AlbumContextMenu } from '../common'
-import { DraggableTypes } from '../consts'
+import { AlbumContextMenu, ImageViewerDialog } from '../common'
 import { formatFullDate } from '../utils'
 
 const useStyles = makeStyles({
@@ -153,17 +149,12 @@ export const DiscSubtitleRow = forwardRef(
             {subtitle}
           </Typography>
           {isLightboxOpen && !imageError && (
-            // Lightbox portals out of the row, but React still bubbles its
-            // events up this tree, where the row's onClick would play the disc.
-            <span onClick={(e) => e.stopPropagation()}>
-              <Lightbox
-                imagePadding={50}
-                animationDuration={200}
-                imageTitle={record.album + ' - ' + subtitle}
-                mainSrc={fullImageUrl}
-                onCloseRequest={handleCloseLightbox}
-              />
-            </span>
+            <ImageViewerDialog
+              title={record.album + ' - ' + subtitle}
+              src={fullImageUrl}
+              open={isLightboxOpen}
+              onClose={handleCloseLightbox}
+            />
           )}
         </TableCell>
         <TableCell>
@@ -198,31 +189,6 @@ export const SongDatagridRow = ({
     isValidElement(c),
   )
 
-  const [, dragDiscRef] = useDrag(
-    () => ({
-      type: DraggableTypes.DISC,
-      item: {
-        discs: [
-          {
-            albumId: record?.albumId,
-            discNumber: record?.discNumber,
-          },
-        ],
-      },
-      options: { dropEffect: 'copy' },
-    }),
-    [record],
-  )
-
-  const [, dragSongRef] = useDrag(
-    () => ({
-      type: DraggableTypes.SONG,
-      item: { ids: [record?.mediaFileId || record?.id] },
-      options: { dropEffect: 'copy' },
-    }),
-    [record],
-  )
-
   if (!record || !record.title) {
     return null
   }
@@ -239,7 +205,6 @@ export const SongDatagridRow = ({
     <>
       {firstTracksOfDiscs.has(record.id) && (
         <DiscSubtitleRow
-          ref={dragDiscRef}
           record={record}
           onClick={onClickSubset}
           contextAlwaysVisible={contextAlwaysVisible}
@@ -247,13 +212,12 @@ export const SongDatagridRow = ({
         />
       )}
       <PureDatagridRow
-        ref={dragSongRef}
         record={record}
         {...rest}
-        rowClick={rowClick}
         className={computedClasses}
+        rowClick={rowClick}
       >
-        {fields}
+        {children}
       </PureDatagridRow>
     </>
   )
